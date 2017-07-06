@@ -4,4 +4,5 @@ Tuki is a game engine designed for simplicity, flexibility and performance.
 
 ### Useful resources ###
 
-https://tuket@bitbucket.org/tuki_team/tuki.git
+http://www.gamasutra.com/blogs/MichaelKissner/20151027/257369/Writing_a_Game_Engine_from_Scratch__Part_1_Messaging.php
+http://foundationsofgameenginedev.com/
