@@ -9,7 +9,7 @@ namespace SimpleMeshes
 Mesh createHorizontalPlane(float width = 1, float depth = 1,
 unsigned widthDivisions = 1, unsigned depthDivisions = 1);
 
-Mesh createScreenPlane(float width, float height);
+void createScreenUvPlane(unsigned& vao, unsigned& vbo, float width, float height);
 
 }
 #endif
