@@ -22,10 +22,10 @@ inline void setVertexAttrib(
 	}
 }
 
-void MeshGpu::uploadMesh(const Mesh& mesh)
+void MeshGpu::load(const Mesh& mesh)
 {
-	glGenVertexArrays(1, &vao);
-	const unsigned vboSetCount = sizeof(MeshVboSet) / sizeof(unsigned);
+	glGenVertexArrays(1, (GLuint*)&vao);
+	const unsigned vboSetCount = sizeof(VboSet) / sizeof(unsigned);
 	glGenBuffers(vboSetCount, (GLuint*)&vboSet);
 
 	glBindVertexArray(vao);
@@ -53,14 +53,20 @@ void MeshGpu::uploadMesh(const Mesh& mesh)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, nt * 3 * sizeof(unsigned), mesh.triangles, GL_STATIC_DRAW);
 }
 
-void freeMeshVAO(MeshVAO& meshVAO)
+void MeshGpu::free()
 {
-	glDeleteBuffers(1, &meshVAO);
+	freeVao(vao);
+	freeVboSet(vboSet);
 }
 
-void freeMeshVBOs(MeshVBOs& meshVBOs)
+void freeVao(Vao vao)
 {
-	glDeleteBuffers(numVBOs, (GLuint*)&meshVBOs);
+	glDeleteBuffers(1, (GLuint*)&vao);
+}
+
+void freeVboSet(const VboSet& vboSet)
+{
+	glDeleteBuffers(sizeof(VboSet)/sizeof(GLuint), (GLuint*)&vboSet);
 }
 
 void Mesh::initVertexData
@@ -100,3 +106,13 @@ void Mesh::initTrianglesData
 	this->triangles = new unsigned[3 * nt];
 	memcpy(this->triangles, triangles, 3 * nt * sizeof(unsigned));
 }
+
+void Mesh::free()
+{
+	delete[] positions;
+	delete[] normals;
+	delete[] tangents;
+	delete[] colors;
+	delete[] texCoords;
+	delete[] triangles;
+};

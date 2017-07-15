@@ -2,6 +2,7 @@
 #include <vector>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glad/glad.h>
 
 using namespace std;
 using namespace glm;
@@ -71,7 +72,7 @@ Mesh createHorizontalPlane(float width = 1, float depth = 1,
         triangles.push_back(i00); triangles.push_back(i11); triangles.push_back(i10);
     }
 
-    mesh.initVertexData(nv, &positions[0][0]), &normals[0][0], &tagents[0][0], &colors[0][0], &texCoord[0][0]);
+    mesh.initVertexData(nv, &positions[0][0], &normals[0][0], &tangents[0][0], &colors[0][0], &texCoords[0][0]);
     mesh.initTrianglesData(nt, &triangles[0]);
 
     return mesh;
@@ -80,7 +81,7 @@ Mesh createHorizontalPlane(float width = 1, float depth = 1,
 void createScreenUvPlane(unsigned& vao, unsigned& vbo, float width, float height)
 {
     const unsigned numVerts = 4;
-    const float planeUVCoords[numVerts] =
+    const float planeUVCoords[2 * numVerts] =
     {
         0, 0,
         1, 0,
@@ -96,6 +97,117 @@ void createScreenUvPlane(unsigned& vao, unsigned& vbo, float width, float height
 		planeUVCoords, GL_STATIC_DRAW);
 	glVertexAttribPointer((unsigned)EMeshAttribLocation::texCoord, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glEnableVertexAttribArray((unsigned)EMeshAttribLocation::texCoord);
+}
+
+Mesh createBox(float width = 1, float height = 1, float depth = 1)
+{
+	const unsigned numQuads = 6;
+	const unsigned nv = 4 * numQuads;
+	const unsigned nt = 2 * numQuads;
+
+	const float w = width / 2;
+	const float h = height / 2;
+	const float d = depth / 2;
+	
+	// positions
+	vector<vec3> positions =
+	{
+		// face -x
+		vec3(-w, -h, +d), vec3(-w, +h, +d), vec3(-w, +h, -d), vec3(-w, -h, -d),
+		// face +x
+		vec3(+w, -h, +d), vec3(+w, -h, -d), vec3(+w, +h, -d), vec3(+w, +h, +d),
+		// face -y
+		vec3(-w, -h, +d), vec3(-w, -h, -d), vec3(+w, -h, -d), vec3(+w, -h, +d),
+		// face +y
+		vec3(-w, +h, +d), vec3(+w, +h, +d), vec3(+w, +h, -d), vec3(-w, +h, -d),
+		// face -z
+		vec3(-w, -h, -d), vec3(-w, +h, -d), vec3(+w, +h, -d), vec3(+w, -h, -d),
+		// face +z
+		vec3(-w, -h, +d), vec3(+w, -h, +d), vec3(+w, +h, +d), vec3(-w, +h, +d)
+	};
+
+	// normals
+	vector<vec3> normals =
+	{
+		// face -x
+		vec3(-1, 0, 0), vec3(-1, 0, 0), vec3(-1, 0, 0), vec3(-1, 0, 0),
+		// face +x
+		vec3(+1, 0, 0), vec3(+1, 0, 0), vec3(+1, 0, 0), vec3(+1, 0, 0),
+		// face -y
+		vec3(0, -1, 0), vec3(0, -1, 0), vec3(0, -1, 0), vec3(0, -1, 0),
+		// face +y
+		vec3(0, +1, 0), vec3(0, +1, 0), vec3(0, +1, 0), vec3(0, +1, 0),
+		// face -z
+		vec3(0, 0, -1), vec3(0, 0, -1), vec3(0, 0, -1), vec3(0, 0, -1),
+		// face +z
+		vec3(0, 0, +1), vec3(0, 0, +1), vec3(0, 0, +1), vec3(0, 0, +1)
+	};
+
+    // tangents
+    vector<vec3> tangents =
+    {
+        // face -x
+		vec3(0, 0, +1), vec3(0, 0, +1), vec3(0, 0, +1), vec3(0, 0, +1),
+		// face +x
+		vec3(0, 0, -1), vec3(0, 0, -1), vec3(0, 0, -1), vec3(0, 0, -1),
+		// face -y
+		vec3(+1, 0, 0), vec3(+1, 0, 0), vec3(+1, 0, 0), vec3(+1, 0, 0),
+		// face +y
+		vec3(+1, 0, 0), vec3(+1, 0, 0), vec3(+1, 0, 0), vec3(+1, 0, 0),
+		// face -z
+		vec3(-1, 0, 0), vec3(-1, 0, 0), vec3(-1, 0, 0), vec3(-1, 0, 0),
+		// face +z
+		vec3(+1, 0, 0), vec3(+1, 0, 0), vec3(+1, 0, 0), vec3(+1, 0, 0)
+    };
+
+    // colors
+    vector<vec3> colors(nv);
+    for(unsigned i=0; i<nv; i++) colors[i] = vec3(0.8f, 0.8f, 0.8f);
+
+    // texCoords
+    vector<vec2> texCoords =
+    {
+        // face -x
+		vec2(1, 0), vec2(1, 1), vec2(0, 1), vec2(0, 0),
+		// face +x
+		vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 1),
+		// face -y
+		vec2(0, 1), vec2(0, 0), vec2(1, 0), vec2(1, 1),
+		// face +y
+		vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 1),
+		// face -z
+		vec2(1, 0), vec2(1, 1), vec2(0, 1), vec2(0, 0),
+		// face +z
+		vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 1)
+    };
+
+    // triangles
+	vector<unsigned> triangles =
+	{
+		// face -x
+		0, 1, 2,
+		0, 2, 3,
+		// face +x
+		4, 5, 6,
+		4, 6, 7,
+		// face -y
+		8, 9, 10,
+		8, 10, 11,
+		// face +y
+		12, 13, 14,
+		12, 14, 15,
+		// face -z
+		16, 17, 18,
+		16, 18, 19,
+		// face +z
+		20, 21, 22,
+		20, 22, 23
+	};
+
+    Mesh mesh;
+    mesh.initVertexData(nv, &positions[0][0], &normals[0][0], &tangents[0][0], &colors[0][0], &texCoords[0][0]);
+    mesh.initTrianglesData(nt, &triangles[0]);
+    return mesh;
 }
 
 }

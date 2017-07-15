@@ -17,7 +17,8 @@ struct Mesh
 	Mesh()
 	{
 		numVertices = numTriangles = 0;
-		positions = normals = tangents = colors = texCoords = triangles = nullptr;
+		positions = normals = tangents = colors = texCoords = nullptr;
+		triangles = nullptr;
 	}
 	
 	void initVertexData
@@ -35,6 +36,9 @@ struct Mesh
 		unsigned numTriangles,
 		unsigned* triangles
 	);
+
+	// release RAM
+	void free();
 	
 };
 
@@ -54,7 +58,7 @@ enum EMeshAttribLocation
 	texCoord,
 	normal,
 	tangent
-}
+};
 
 struct VboSet
 {
@@ -78,21 +82,10 @@ struct MeshGpu
 	void load(const Mesh& mesh);
 	// fre GPU memory
 	void free();
-}
-
-// free main memory
-static inline void freeMesh(Mesh& mesh)
-{
-	delete[] mesh.positions;
-	delete[] mesh.normals;
-	delete[] mesh.tangents;
-	delete[] mesh.colors;
-	delete[] mesh.texCoords;
-	delete[] mesh.triangles;
 };
 
 // free GPU memory
-void freeVao(Vao& vao);
-void freeVboSet(VboSet& vbo);
+void freeVao(Vao vao);
+void freeVboSet(const VboSet& vbo);
 
 #endif
