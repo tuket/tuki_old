@@ -21,6 +21,9 @@ set(SRC_RENDER_MESH
 	"simple_meshes.hpp" "simple_meshes.cpp"
 )
 
+set(SRC_RENDER_SHADER
+	"shader.hpp" "shader.cpp"
+)
 
 # ----------------------------------------------------
 # ADD _LIBRARY
