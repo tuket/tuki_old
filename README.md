@@ -1,6 +1,6 @@
 # About #
 
-Tuki is a game engine designed for simplicity, flexibility and performance.
+Tuki is a game engine for learning purposes.
 
 ### Useful resources ###
 
