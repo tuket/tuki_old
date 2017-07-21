@@ -30,9 +30,11 @@ set(SRC_RENDER_SHADER
 # ----------------------------------------------------
 
 PREPEND(SRC_RENDER_MESH "src/render/mesh" ${SRC_RENDER_MESH})
+PREPEND(SRC_RENDER_SHADER "src/render/shader" ${SRC_RENDER_SHADER})
 
 add_library(${PROJ_NAME}
 	${SRC_RENDER_MESH}
+	${SRC_RENDER_SHADER}
 )
 
 # ----------------------------------------------------
@@ -64,6 +66,7 @@ target_include_directories(${PROJ_NAME} PUBLIC
 # ----------------------------------------------------
 
 source_group("render\\mesh" FILES ${SRC_RENDER_MESH})
+source_group("render\\shader" FILES ${SRC_RENDER_SHADER})
 
 # ----------------------------------------------------
 # Copy assets to the build directory
