@@ -25,6 +25,10 @@ set(SRC_RENDER_SHADER
 	"shader.hpp" "shader.cpp"
 )
 
+set(SRC_RENDER_MATERIAL
+	"material.hpp" "material.cpp"
+)
+
 set(SRC_UTIL
 	"util.hpp" "util.cpp"
 )
@@ -35,11 +39,13 @@ set(SRC_UTIL
 
 PREPEND(SRC_RENDER_MESH "src/render/mesh" ${SRC_RENDER_MESH})
 PREPEND(SRC_RENDER_SHADER "src/render/shader" ${SRC_RENDER_SHADER})
+PREPEND(SRC_RENDER_MATERIAL "src/render/material" ${SRC_RENDER_MATERIAL})
 PREPEND(SRC_UTIL "src/util" ${SRC_UTIL})
 
 add_library(${PROJ_NAME}
 	${SRC_RENDER_MESH}
 	${SRC_RENDER_SHADER}
+	${SRC_RENDER_MATERIAL}
 	${SRC_UTIL}
 )
 
@@ -73,6 +79,7 @@ target_include_directories(${PROJ_NAME} PUBLIC
 
 source_group("render\\mesh" FILES ${SRC_RENDER_MESH})
 source_group("render\\shader" FILES ${SRC_RENDER_SHADER})
+source_group("render\\material" FILES ${SRC_RENDER_MATERIAL})
 source_group("util" FILES ${SRC_UTIL})
 
 # ----------------------------------------------------
