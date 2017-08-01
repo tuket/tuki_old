@@ -42,23 +42,38 @@ struct Mesh
 	
 };
 
-struct VertexAttribLocations
+enum class EAttribLocation
 {
-	int pos;
-	int color;
-	int texCoord;
-	int normal;
-	int tangent;
+	POS,
+	COLOR,
+	TEX_COORD,
+	NORMAL,
+	TANGENT,
+	BITANGENT,
+	TEX_COORD_1,
+	TEX_COORD_2,
+	TEX_COORD_3,
 };
-
-enum EMeshAttribLocation
+enum class EAttribBitMask
 {
-	pos = 0,
-	color,
-	texCoord,
-	normal,
-	tangent
+	POS =			1 << (unsigned)EAttribLocation::POS,
+	COLOR =			1 << (unsigned)EAttribLocation::COLOR,
+	TEX_COORD =		1 << (unsigned)EAttribLocation::TEX_COORD,
+	NORMAL =		1 << (unsigned)EAttribLocation::NORMAL,
+	TANGENT =		1 << (unsigned)EAttribLocation::TANGENT,
+	BITANGENT =		1 << (unsigned)EAttribLocation::BITANGENT,
+	TEX_COORD_1 =	1 << (unsigned)EAttribLocation::TEX_COORD_1,
+	TEX_COORD_2 =	1 << (unsigned)EAttribLocation::TEX_COORD_2,
+	TEX_COORD_3 =	1 << (unsigned)EAttribLocation::TEX_COORD_3,
 };
+inline EAttribBitMask operator|(EAttribBitMask a, EAttribBitMask b)
+{
+	return static_cast<EAttribBitMask>( (int)a | (int)b );
+}
+inline EAttribBitMask operator&(EAttribBitMask a, EAttribBitMask b)
+{
+	return static_cast<EAttribBitMask>((int)a & (int)b);
+}
 
 struct VboSet
 {
@@ -77,9 +92,11 @@ struct MeshGpu
 {
 	Vao vao;
 	VboSet vboSet;
+	EAttribBitMask availableAttribs;
 
 	// upload mesh from RAM to VRAM
 	void load(const Mesh& mesh);
+
 	// fre GPU memory
 	void free();
 };

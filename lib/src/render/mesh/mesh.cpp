@@ -33,20 +33,27 @@ void MeshGpu::load(const Mesh& mesh)
 	const unsigned nv = mesh.numVertices;
 	const unsigned nt = mesh.numTriangles;
 
+	availableAttribs =
+		EAttribBitMask::POS |
+		EAttribBitMask::COLOR |
+		EAttribBitMask::TEX_COORD |
+		EAttribBitMask::NORMAL |
+		EAttribBitMask::TANGENT;
+
 	setVertexAttrib(
-		(int)EMeshAttribLocation::pos,
+		(int)EAttribLocation::POS,
 		vboSet.pos, nv, 3, mesh.positions);
 	setVertexAttrib(
-		(int)EMeshAttribLocation::color,
+		(int)EAttribLocation::COLOR,
 		vboSet.color, nv, 3, mesh.colors);
 	setVertexAttrib(
-		(int)EMeshAttribLocation::texCoord,
+		(int)EAttribLocation::TEX_COORD,
 		vboSet.texCoord, nv, 2, mesh.texCoords);
 	setVertexAttrib(
-		(int)EMeshAttribLocation::normal,
+		(int)EAttribLocation::NORMAL,
 		vboSet.normal, nv, 3, mesh.normals);
 	setVertexAttrib(
-		(int)EMeshAttribLocation::tangent,
+		(int)EAttribLocation::TANGENT,
 		vboSet.tangent, nv, 3, mesh.tangents);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboSet.indices);

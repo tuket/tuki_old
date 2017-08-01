@@ -16,14 +16,11 @@ enum class UnifType
 	COUNT
 };
 
-class Material
+class MaterialTemplate
 {
-public:
-
-
 
 private:
-	int shaderProgramId;
+	int shaderProgram;
 
 	// the name of the attribute in the shader ->
 	// entry id for querying tables
@@ -38,10 +35,10 @@ private:
 	std::vector<int> typeToNumEntries;
 	// entry to the chunck of data
 	std::vector<int> idEntryToDataEntry;
-	// one contiguous memory chunck for storing all uniform data
-	std::vector<int> data;
+
 
 private:
+
 	UnifType getUnifType(float) const { return UnifType::FLOAT; }
 	UnifType getUnifType(glm::vec2) const { return UnifType::VEC2; }
 	UnifType getUnifType(glm::vec3) const { return UnifType::VEC3; }
@@ -55,6 +52,27 @@ private:
 	UnifType getUnifType(glm::uvec3) const { return UnifType::UINT3; }
 	UnifType getUnifType(glm::uvec4) const { return UnifType::UINT4; }
 	///UnifType getUnifType(TextureId )
+
+
+};
+
+class Material
+{
+public:
+
+	Material() {}
+
+	void setUniform();
+
+
+private:
+	int shaderProgramId;
+
+	// one contiguous memory chunck for storing all uniform data
+	std::vector<int> data;
+
+private:
+	
 
 
 

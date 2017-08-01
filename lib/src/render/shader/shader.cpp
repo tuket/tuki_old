@@ -5,8 +5,10 @@
 #include <glad/glad.h>
 #include <cassert>
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
+using namespace glm;
 
 // SHADER
 
@@ -133,4 +135,90 @@ void ShaderProgram::use()
 	assert(program >= 0 && "Attempted to use an invalid shader program");
 
 	glUseProgram(program);
+}
+
+// UNIFORM UPLOADERS
+void ShaderProgram::uploadUniform(int location, float value)
+{
+	glUniform1f(location, value);
+}
+
+void ShaderProgram::uploadUniform(int location, const vec2& value)
+{
+	glUniform2fv(location, 1, &value[0]);
+}
+
+void ShaderProgram::uploadUniform(int location, const vec3& value)
+{
+	glUniform3fv(location, 1, &value[0]);
+}
+
+void ShaderProgram::uploadUniform(int location, const vec4& value)
+{
+	glUniform4fv(location, 1, &value[0]);
+}
+
+void ShaderProgram::uploadUniform(int location, int value)
+{
+	glUniform1i(location, value);
+}
+
+void ShaderProgram::uploadUniform(int location, const ivec2& value)
+{
+	glUniform2iv(location, 1, &value[0]);
+}
+
+void ShaderProgram::uploadUniform(int location, const ivec2& value)
+{
+	glUniform3iv(location, 1, &value[0]);
+}
+
+void ShaderProgram::uploadUniform(int location, const ivec2& value)
+{
+	glUniform4iv(location, 1, &value[0]);
+}
+
+void ShaderProgram::uploadUniform(int location, const mat2& value)
+{
+	glUniformMatrix2fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, const mat3& value)
+{
+	glUniformMatrix3fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, const mat4& value)
+{
+	glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, const mat2x3& value)
+{
+	glUniformMatrix2x3fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, const mat3x2& value)
+{
+	glUniformMatrix3x2fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, const mat2x4& value)
+{
+	glUniformMatrix2x4fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, const mat4x2& value)
+{
+	glUniformMatrix4x2fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, const mat3x4& value)
+{
+	glUniformMatrix3x4fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, const mat4x3& value)
+{
+	glUniformMatrix4x3fv(location, 1, GL_FALSE, value_ptr(value));
 }
