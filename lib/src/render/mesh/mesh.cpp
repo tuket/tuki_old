@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <stdio.h>
 #include <cstring>
+#include <cassert>
 
 // upload vertex attrib data and set the pointer
 inline void setVertexAttrib(
@@ -22,6 +23,13 @@ inline void setVertexAttrib(
 	}
 }
 
+void MeshGpu::load(const IMesh& mesh)
+{
+	glGenVertexArrays(1, (GLuint*)&vao);
+	const unsigned vboSetCount = sizeof(VboSet) / sizeof(unsigned);
+	glGenBuffers(vboSetCount, (GLuint*)&vboSet);
+}
+
 void MeshGpu::load(const Mesh& mesh)
 {
 	glGenVertexArrays(1, (GLuint*)&vao);
@@ -33,29 +41,50 @@ void MeshGpu::load(const Mesh& mesh)
 	const unsigned nv = mesh.numVertices;
 	const unsigned nt = mesh.numTriangles;
 
-	availableAttribs =
-		EAttribBitMask::POS |
-		EAttribBitMask::COLOR |
-		EAttribBitMask::TEX_COORD |
-		EAttribBitMask::NORMAL |
-		EAttribBitMask::TANGENT;
+	availableAttribs = EAttribBitMask::NONE;
 
-	setVertexAttrib(
-		(int)EAttribLocation::POS,
-		vboSet.pos, nv, 3, mesh.positions);
-	setVertexAttrib(
-		(int)EAttribLocation::COLOR,
-		vboSet.color, nv, 3, mesh.colors);
-	setVertexAttrib(
-		(int)EAttribLocation::TEX_COORD,
-		vboSet.texCoord, nv, 2, mesh.texCoords);
-	setVertexAttrib(
-		(int)EAttribLocation::NORMAL,
-		vboSet.normal, nv, 3, mesh.normals);
-	setVertexAttrib(
-		(int)EAttribLocation::TANGENT,
-		vboSet.tangent, nv, 3, mesh.tangents);
+	if (mesh.positions)
+	{
+		availableAttribs |= EAttribBitMask::POS;
+		setVertexAttrib(
+			(int)EAttribLocation::POS,
+			vboSet.pos, nv, 3, mesh.positions);
+		glEnableVertexAttribArray((unsigned)EAttribLocation::POS);
+	}
+	if (mesh.colors)
+	{
+		availableAttribs |= EAttribBitMask::COLOR;
+		setVertexAttrib(
+			(int)EAttribLocation::COLOR,
+			vboSet.color, nv, 3, mesh.colors);
+		glEnableVertexAttribArray((unsigned)EAttribLocation::COLOR);
+	}
+	if (mesh.texCoords)
+	{
+		availableAttribs |= EAttribBitMask::TEX_COORD;
+		setVertexAttrib(
+			(int)EAttribLocation::TEX_COORD,
+			vboSet.texCoord, nv, 2, mesh.texCoords);
+		glEnableVertexAttribArray((unsigned)EAttribLocation::TEX_COORD);
+	}
+	if (mesh.normals)
+	{
+		availableAttribs |= EAttribBitMask::NORMAL;
+		setVertexAttrib(
+			(int)EAttribLocation::NORMAL,
+			vboSet.normal, nv, 3, mesh.normals);
+		glEnableVertexAttribArray((unsigned)EAttribLocation::NORMAL);
+	}
+	if (mesh.tangents)
+	{
+		availableAttribs |= EAttribBitMask::TANGENT;
+		setVertexAttrib(
+			(int)EAttribLocation::TANGENT,
+			vboSet.tangent, nv, 3, mesh.tangents);
+		glEnableVertexAttribArray((unsigned)EAttribLocation::TANGENT);
+	}
 
+	assert(mesh.triangles);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboSet.indices);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, nt * 3 * sizeof(unsigned), mesh.triangles, GL_STATIC_DRAW);
 }
@@ -112,6 +141,20 @@ void Mesh::initTrianglesData
 
 	this->triangles = new unsigned[3 * nt];
 	memcpy(this->triangles, triangles, 3 * nt * sizeof(unsigned));
+}
+
+const float* Mesh::getAttribData(EAttribLocation index)const
+{
+	const float* dataPtr = nullptr;
+	switch (index)
+	{
+		case EAttribLocation::POS:		 dataPtr = positions; break;
+		case EAttribLocation::NORMAL:	 dataPtr = normals; break;
+		case EAttribLocation::TANGENT:	 dataPtr = tangents; break;
+		case EAttribLocation::COLOR:	 dataPtr = colors; break;
+		case EAttribLocation::TEX_COORD: dataPtr = texCoords; break;
+	}
+	return dataPtr;
 }
 
 void Mesh::free()

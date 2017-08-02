@@ -119,8 +119,8 @@ bool ShaderProgram::link()
 		delete[] logString;
 
 		// delete the program
-		// note: we don't delete shaders because they could
-		// be beeing used by another program
+		// note: we don't delete shader objects because they
+		// could be beeing used by another program
 		glDeleteProgram(program);
 		program = -1;
 

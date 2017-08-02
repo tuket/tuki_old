@@ -134,5 +134,26 @@ protected:
 	bool compiledOk;
 };
 
+inline EUnifType getUnifType(float) { return EUnifType::FLOAT; }
+inline EUnifType getUnifType(glm::vec2) { return EUnifType::VEC2; }
+inline EUnifType getUnifType(glm::vec3) { return EUnifType::VEC3; }
+inline EUnifType getUnifType(glm::vec4) { return EUnifType::VEC4; }
+inline EUnifType getUnifType(int) { return EUnifType::INT; }
+inline EUnifType getUnifType(glm::ivec2) { return EUnifType::INT2; }
+inline EUnifType getUnifType(glm::ivec3) { return EUnifType::INT3; }
+inline EUnifType getUnifType(glm::ivec4) { return EUnifType::INT4; }
+inline EUnifType getUnifType(unsigned) { return EUnifType::UINT; }
+inline EUnifType getUnifType(glm::uvec2) { return EUnifType::UINT2; }
+inline EUnifType getUnifType(glm::uvec3) { return EUnifType::UINT3; }
+inline EUnifType getUnifType(glm::uvec4) { return EUnifType::UINT4; }
+inline EUnifType getUnifType(glm::mat2) { return EUnifType::MATRIX_2; }
+inline EUnifType getUnifType(glm::mat3) { return EUnifType::MATRIX_3; }
+inline EUnifType getUnifType(glm::mat4) { return EUnifType::MATRIX_4; }
+inline EUnifType getUnifType(glm::mat2x3) { return EUnifType::MATRIX_2x3; }
+inline EUnifType getUnifType(glm::mat3x2) { return EUnifType::MATRIX_3x2; }
+inline EUnifType getUnifType(glm::mat2x4) { return EUnifType::MATRIX_2x4; }
+inline EUnifType getUnifType(glm::mat4x2) { return EUnifType::MATRIX_4x2; }
+inline EUnifType getUnifType(glm::mat3x4) { return EUnifType::MATRIX_3x4; }
+inline EUnifType getUnifType(glm::mat4x3) { return EUnifType::MATRIX_4x3; }
 
 #endif

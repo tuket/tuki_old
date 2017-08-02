@@ -78,7 +78,7 @@ Mesh createHorizontalPlane(float width = 1, float depth = 1,
     return mesh;
 }
 
-void createScreenUvPlane(unsigned& vao, unsigned& vbo, float width, float height)
+Mesh createScreenUvPlane(float width, float height)
 {
     const unsigned numVerts = 4;
     const float planeUVCoords[2 * numVerts] =
@@ -95,8 +95,8 @@ void createScreenUvPlane(unsigned& vao, unsigned& vbo, float width, float height
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, numVerts * sizeof(float) * 2,
 		planeUVCoords, GL_STATIC_DRAW);
-	glVertexAttribPointer((unsigned)EMeshAttribLocation::texCoord, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-	glEnableVertexAttribArray((unsigned)EMeshAttribLocation::texCoord);
+	glVertexAttribPointer((unsigned)EAttribLocation::TEX_COORD, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray((unsigned)EAttribLocation::TEX_COORD);
 }
 
 Mesh createBox(float width = 1, float height = 1, float depth = 1)
