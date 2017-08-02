@@ -13,7 +13,7 @@ enum class EGeomType
 
 enum class EAttribLocation
 {
-	POS,
+	POS = 0,	// must be 0!
 	COLOR,
 	TEX_COORD,
 	NORMAL,
@@ -54,6 +54,19 @@ inline EAttribBitMask& operator &=(EAttribBitMask& a, EAttribBitMask b)
 {
 	return a = a & b;
 }
+
+const unsigned ATTRIB_NUM_COMPONENTS[(int)EAttribLocation::NUM_ATTRIBS] =
+{
+	3,		// POS
+	3,		// COLOR
+	2,		// TEX_COORD
+	3,		// NORMAL
+	3,		// TANGENT
+	3,		// BITANGENT
+	2,		// TEX_COORD_1
+	2,		// TEX_COORD_2
+	2,		// TEX_COORD_3
+};
 
 // MESH INTERFACE
 struct IMesh
@@ -115,14 +128,15 @@ struct Mesh : IMesh
 	
 };
 
-struct VboSet
-{
-	int attribs[(int)EAttribLocation::NUM_ATTRIBS];
-	// triangle indices
-	int indices;
-};
-
 typedef int Vao;
+typedef int Vbo;
+
+struct VboSetFull
+{
+	Vbo attribs[(int)EAttribLocation::NUM_ATTRIBS];
+	// triangle indices
+	Vbo indices;
+};
 
 // MESH IN THE GPU
 
@@ -143,25 +157,18 @@ struct IMeshGpu
 // for better performance inherit from IMesh and make more specific implementation
 struct MeshGpuGeneric : IMeshGpu
 {
-	VboSet vboSet;
-};
+	VboSetFull vboSet;
 
-struct IMeshGpu
-{
-	Vao vao;
-	VboSet vboSet;
-	EAttribBitMask availableAttribs;
-
-	// upload mesh from RAM to VRAM
 	void load(const IMesh& mesh);
 	void load(const Mesh& mesh);
-
-	// fre GPU memory
 	void free();
 };
 
 // free GPU memory
 void freeVao(Vao vao);
+void freeVbo(Vbo vbo);
+void freeVaos(const Vao* vaos, unsigned num);
+void freeVbos(const Vbo* vbos, unsigned num);
 void freeVboSet(const VboSet& vbo);
 
 #endif

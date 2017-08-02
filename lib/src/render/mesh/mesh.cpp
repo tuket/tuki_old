@@ -23,14 +23,38 @@ inline void setVertexAttrib(
 	}
 }
 
-void MeshGpu::load(const IMesh& mesh)
+void MeshGpuGeneric::load(const IMesh& mesh)
 {
 	glGenVertexArrays(1, (GLuint*)&vao);
-	const unsigned vboSetCount = sizeof(VboSet) / sizeof(unsigned);
+	const unsigned vboSetCount = sizeof(VboSetFull) / sizeof(int);
 	glGenBuffers(vboSetCount, (GLuint*)&vboSet);
+
+	glBindVertexArray(vao);
+
+	const unsigned nv = mesh.getNumVertices();
+	const unsigned ni = mesh.getNumIndices();
+
+	attribBitMask = EAttribBitMask::NONE;
+
+	for (unsigned i = 0; i < (unsigned)EAttribLocation::NUM_ATTRIBS; i++)
+	{
+		EAttribLocation curAttrib = (EAttribLocation)i;
+		if (mesh.hasAttribData((EAttribLocation)i))
+		{
+			attribBitMask |= (EAttribBitMask)(1 << i);
+			setVertexAttrib(
+				i, vboSet.attribs[i], ////////// CURRENT CODING POINT
+			);
+		}
+	}
 }
 
-void MeshGpu::load(const Mesh& mesh)
+void MeshGpuGeneric::load(const IMesh& mesh)
+{
+
+}
+
+void MeshGpuGeneric::load(const Mesh& mesh)
 {
 	glGenVertexArrays(1, (GLuint*)&vao);
 	const unsigned vboSetCount = sizeof(VboSet) / sizeof(unsigned);
@@ -41,11 +65,11 @@ void MeshGpu::load(const Mesh& mesh)
 	const unsigned nv = mesh.numVertices;
 	const unsigned nt = mesh.numTriangles;
 
-	availableAttribs = EAttribBitMask::NONE;
+	attribBitMask = EAttribBitMask::NONE;
 
 	if (mesh.positions)
 	{
-		availableAttribs |= EAttribBitMask::POS;
+		attribBitMask |= EAttribBitMask::POS;
 		setVertexAttrib(
 			(int)EAttribLocation::POS,
 			vboSet.pos, nv, 3, mesh.positions);
@@ -53,7 +77,7 @@ void MeshGpu::load(const Mesh& mesh)
 	}
 	if (mesh.colors)
 	{
-		availableAttribs |= EAttribBitMask::COLOR;
+		attribBitMask |= EAttribBitMask::COLOR;
 		setVertexAttrib(
 			(int)EAttribLocation::COLOR,
 			vboSet.color, nv, 3, mesh.colors);
@@ -61,7 +85,7 @@ void MeshGpu::load(const Mesh& mesh)
 	}
 	if (mesh.texCoords)
 	{
-		availableAttribs |= EAttribBitMask::TEX_COORD;
+		attribBitMask |= EAttribBitMask::TEX_COORD;
 		setVertexAttrib(
 			(int)EAttribLocation::TEX_COORD,
 			vboSet.texCoord, nv, 2, mesh.texCoords);
@@ -69,7 +93,7 @@ void MeshGpu::load(const Mesh& mesh)
 	}
 	if (mesh.normals)
 	{
-		availableAttribs |= EAttribBitMask::NORMAL;
+		attribBitMask |= EAttribBitMask::NORMAL;
 		setVertexAttrib(
 			(int)EAttribLocation::NORMAL,
 			vboSet.normal, nv, 3, mesh.normals);
@@ -77,7 +101,7 @@ void MeshGpu::load(const Mesh& mesh)
 	}
 	if (mesh.tangents)
 	{
-		availableAttribs |= EAttribBitMask::TANGENT;
+		attribBitMask |= EAttribBitMask::TANGENT;
 		setVertexAttrib(
 			(int)EAttribLocation::TANGENT,
 			vboSet.tangent, nv, 3, mesh.tangents);
@@ -89,7 +113,7 @@ void MeshGpu::load(const Mesh& mesh)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, nt * 3 * sizeof(unsigned), mesh.triangles, GL_STATIC_DRAW);
 }
 
-void MeshGpu::free()
+void MeshGpuGeneric::free()
 {
 	freeVao(vao);
 	freeVboSet(vboSet);
@@ -98,6 +122,21 @@ void MeshGpu::free()
 void freeVao(Vao vao)
 {
 	glDeleteBuffers(1, (GLuint*)&vao);
+}
+
+void freeVbo(Vbo vbo)
+{
+	glDeleteBuffers(1, (GLuint*)&vbo);
+}
+
+void freeVaos(const Vao* vaos, unsigned num)
+{
+	glDeleteBuffers(num, (const GLuint*)vaos);
+}
+
+void freeVbos(const Vbo* vbos, unsigned num)
+{
+	glDeleteBuffers(num, (const GLuint*)vbos);
 }
 
 void freeVboSet(const VboSet& vboSet)
