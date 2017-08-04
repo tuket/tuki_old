@@ -7,7 +7,7 @@
 
 // upload vertex attrib data and set the pointer
 inline void setVertexAttrib(
-	int attribLocation, int vbo, unsigned numVerts, unsigned numDims, void* data)
+	int attribLocation, Vbo vbo, unsigned numVerts, unsigned numDims, const void* data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	if (data != nullptr)
@@ -23,12 +23,21 @@ inline void setVertexAttrib(
 	}
 }
 
+// upload vertex indices
+inline void setVertexIndices(Vbo vbo, unsigned numInds, const void* data)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numInds * sizeof(unsigned), data, GL_STATIC_DRAW);
+}
+
+void IMeshGpu::bind()const
+{
+	glBindVertexArray(vao);
+}
+
 void MeshGpuGeneric::load(const IMesh& mesh)
 {
 	glGenVertexArrays(1, (GLuint*)&vao);
-	const unsigned vboSetCount = sizeof(VboSetFull) / sizeof(int);
-	glGenBuffers(vboSetCount, (GLuint*)&vboSet);
-
 	glBindVertexArray(vao);
 
 	const unsigned nv = mesh.getNumVertices();
@@ -36,87 +45,73 @@ void MeshGpuGeneric::load(const IMesh& mesh)
 
 	attribBitMask = EAttribBitMask::NONE;
 
+	// vertex attributes
 	for (unsigned i = 0; i < (unsigned)EAttribLocation::NUM_ATTRIBS; i++)
 	{
 		EAttribLocation curAttrib = (EAttribLocation)i;
 		if (mesh.hasAttribData((EAttribLocation)i))
 		{
 			attribBitMask |= (EAttribBitMask)(1 << i);
-			setVertexAttrib(
-				i, vboSet.attribs[i], ////////// CURRENT CODING POINT
-			);
+			const unsigned numComp = ATTRIB_NUM_COMPONENTS[i];
+			const void* data = mesh.getAttribData(curAttrib);
+			glGenBuffers(1, (GLuint*)&vboSet.attribs[i]);
+			setVertexAttrib(i, vboSet.attribs[i], nv, numComp, data);
+		}
+		else
+		{
+			// it's important to set the vbo to 0, oterwise if there is garbage
+			// when deleting the vbo we could be deleting unwanted vbos
+			vboSet.attribs[i] = 0;
 		}
 	}
-}
 
-void MeshGpuGeneric::load(const IMesh& mesh)
-{
-
-}
-
-void MeshGpuGeneric::load(const Mesh& mesh)
-{
-	glGenVertexArrays(1, (GLuint*)&vao);
-	const unsigned vboSetCount = sizeof(VboSet) / sizeof(unsigned);
-	glGenBuffers(vboSetCount, (GLuint*)&vboSet);
-
-	glBindVertexArray(vao);
-
-	const unsigned nv = mesh.numVertices;
-	const unsigned nt = mesh.numTriangles;
-
-	attribBitMask = EAttribBitMask::NONE;
-
-	if (mesh.positions)
+	// elements
+	if (mesh.hasIndices())
 	{
-		attribBitMask |= EAttribBitMask::POS;
-		setVertexAttrib(
-			(int)EAttribLocation::POS,
-			vboSet.pos, nv, 3, mesh.positions);
-		glEnableVertexAttribArray((unsigned)EAttribLocation::POS);
+		glGenBuffers(1, (GLuint*)vboSet.attribs);
+		setVertexIndices(vboSet.indices, ni, (void*)mesh.getIndices());
 	}
-	if (mesh.colors)
+	else
 	{
-		attribBitMask |= EAttribBitMask::COLOR;
-		setVertexAttrib(
-			(int)EAttribLocation::COLOR,
-			vboSet.color, nv, 3, mesh.colors);
-		glEnableVertexAttribArray((unsigned)EAttribLocation::COLOR);
+		// it's important to set the vbo to 0, oterwise if there is garbage
+		// when deleting the vbo we could be deleting unwanted vbos
+		vboSet.indices = 0;
 	}
-	if (mesh.texCoords)
-	{
-		attribBitMask |= EAttribBitMask::TEX_COORD;
-		setVertexAttrib(
-			(int)EAttribLocation::TEX_COORD,
-			vboSet.texCoord, nv, 2, mesh.texCoords);
-		glEnableVertexAttribArray((unsigned)EAttribLocation::TEX_COORD);
-	}
-	if (mesh.normals)
-	{
-		attribBitMask |= EAttribBitMask::NORMAL;
-		setVertexAttrib(
-			(int)EAttribLocation::NORMAL,
-			vboSet.normal, nv, 3, mesh.normals);
-		glEnableVertexAttribArray((unsigned)EAttribLocation::NORMAL);
-	}
-	if (mesh.tangents)
-	{
-		attribBitMask |= EAttribBitMask::TANGENT;
-		setVertexAttrib(
-			(int)EAttribLocation::TANGENT,
-			vboSet.tangent, nv, 3, mesh.tangents);
-		glEnableVertexAttribArray((unsigned)EAttribLocation::TANGENT);
-	}
-
-	assert(mesh.triangles);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboSet.indices);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, nt * 3 * sizeof(unsigned), mesh.triangles, GL_STATIC_DRAW);
 }
 
 void MeshGpuGeneric::free()
 {
 	freeVao(vao);
 	freeVboSet(vboSet);
+}
+
+void UvPlaneMeshGpu::load()
+{
+	const unsigned nv = 4;
+	const float uvCoords[2 * nv] =
+	{
+		0, 1,
+		0, 0,
+		1, 1,
+		1, 0
+	};
+	const unsigned loc = (unsigned)EAttribLocation::TEX_COORD;
+
+	glGenVertexArrays(1, (GLuint*)&vao);
+	glBindVertexArray(vao);
+
+	glGenBuffers(1, (GLuint*)&vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	glBufferData(GL_ARRAY_BUFFER, nv * 2 * sizeof(float), (void*)uvCoords, GL_STATIC_DRAW);
+	glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(loc);
+}
+
+void UvPlaneMeshGpu::free()
+{
+	freeVao(vao);
+	freeVbo(vbo);
 }
 
 void freeVao(Vao vao)
@@ -139,9 +134,16 @@ void freeVbos(const Vbo* vbos, unsigned num)
 	glDeleteBuffers(num, (const GLuint*)vbos);
 }
 
-void freeVboSet(const VboSet& vboSet)
+void freeVboSet(const VboSetFull& vboSet)
 {
-	glDeleteBuffers(sizeof(VboSet)/sizeof(GLuint), (GLuint*)&vboSet);
+	const unsigned na = (unsigned)EAttribLocation::NUM_ATTRIBS;
+	// we don't need to check if the vbos are valid because 0s are ignored by OpenGL API
+	// in the creation, we have been careful to initialize unused vbos to 0
+	for (unsigned i = 0; i < na; i++)
+	{
+		freeVbo(vboSet.attribs[i]);
+	}
+	freeVbo(vboSet.indices);
 }
 
 void Mesh::initVertexData

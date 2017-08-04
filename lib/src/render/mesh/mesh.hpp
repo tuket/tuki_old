@@ -81,7 +81,7 @@ public:
 	virtual unsigned getNumIndices()const = 0;
 };
 
-// COMMON STATIC MESH
+// COMMON STATIC TRIANGLE MESH
 struct Mesh : IMesh
 {
 	unsigned numVertices;
@@ -102,10 +102,10 @@ struct Mesh : IMesh
 	}
 
 	EGeomType getGeomType()const { return EGeomType::TRIANGLES; }
-	const unsigned* getIndices() { return triangles; }
+	const unsigned* getIndices()const { return triangles; }
 	const float* getAttribData(EAttribLocation index)const;
 	unsigned getNumVertices()const { return numVertices; }
-	unsigned getNunIndices()const { return numTriangles; }
+	unsigned getNumIndices()const { return 3 * numTriangles; }
 	
 	void initVertexData
 	(
@@ -144,23 +144,45 @@ struct VboSetFull
 struct IMeshGpu
 {
 	Vao vao;
-	EAttribBitMask attribBitMask;
+
+	virtual bool hasIndices()const = 0;
+	virtual EGeomType getGeomType()const = 0;
+	virtual EAttribBitMask getAttribBitMask()const = 0;
+
+	void bind()const;
 
 	// upload mesh from RAM to VRAM
-	void load(const IMesh& mesh) = 0;
+	virtual void load(const IMesh& mesh) {};
 
 	// fre GPU memory
 	virtual void free() = 0;
 };
 
-// can be used for any type of mesh configuration
-// for better performance inherit from IMesh and make more specific implementation
+// can be used for any type of triangle mesh configuration
+// for better performance inherit from IMesh and make a more specific implementation
 struct MeshGpuGeneric : IMeshGpu
 {
 	VboSetFull vboSet;
+	EAttribBitMask attribBitMask;
+
+	bool hasIndices()const { return vboSet.indices >= 0; }
+	EGeomType getGeomType()const { return EGeomType::TRIANGLES; }
+	EAttribBitMask getAttribBitMask()const { return attribBitMask; }
 
 	void load(const IMesh& mesh);
 	void load(const Mesh& mesh);
+	void free();
+};
+
+struct UvPlaneMeshGpu : IMeshGpu
+{
+	Vbo vbo;
+
+	bool hasIndices()const { return false; }
+	EGeomType getGeomType()const { return EGeomType::TRIANGLE_STRIP; }
+	EAttribBitMask getAttribBitMask()const { return EAttribBitMask::TEX_COORD; }
+
+	void load();
 	void free();
 };
 
@@ -169,6 +191,5 @@ void freeVao(Vao vao);
 void freeVbo(Vbo vbo);
 void freeVaos(const Vao* vaos, unsigned num);
 void freeVbos(const Vbo* vbos, unsigned num);
-void freeVboSet(const VboSet& vbo);
 
 #endif
