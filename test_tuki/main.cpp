@@ -2,6 +2,8 @@
 #include <pugixml.hpp>
 #include <SDL.h>
 #include <glad/glad.h>
+#include <tuki/render/shader/shader.hpp>
+#include <tuki/render/mesh/simple_meshes.hpp>
 
 using namespace std;
 
@@ -47,6 +49,20 @@ int main(int argc, char** argv)
 	glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_CULL_FACE);
+	
+	VertexShader vertShad;
+	vertShad.loadFromFile("shaders/uv_quad.vs");
+	vertShad.compile();
+	FragmentShader fragShad;
+	fragShad.loadFromFile("shaders/uv_quad.fs");
+	fragShad.compile();
+	ShaderProgram prog;
+	prog.setVertexShader(vertShad);
+	prog.setFragmentShader(fragShad);
+	prog.link();
+
+	UvPlaneMeshGpu uvPlane;
+	uvPlane.load();
 
 	static float prevTime = (float)SDL_GetTicks();
 	static float curTime = (float)SDL_GetTicks();
@@ -67,8 +83,11 @@ int main(int argc, char** argv)
 			}
 		}
 		
-
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		prog.use();
+		uvPlane.bind();
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		SDL_GL_SwapWindow(window);
 

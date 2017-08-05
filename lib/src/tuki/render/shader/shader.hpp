@@ -84,12 +84,9 @@ public:
 // SHADER PROGRAM
 class ShaderProgram
 {
-
-protected:
-
-	ShaderProgram() : program(-1), compiledOk(false) {}
-
 public:
+	
+	ShaderProgram() : program(-1), compiledOk(false) {}
 
 	void setVertexShader(VertexShader vertShad) { this->vertShad = vertShad; }
 	void setFragmentShader(FragmentShader fragShad) { this->fragShad = fragShad;  }

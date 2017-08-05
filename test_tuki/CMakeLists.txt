@@ -20,3 +20,12 @@ add_executable(${PROJ_NAME}
 )
 
 target_link_libraries(${PROJ_NAME} "tuki_lib")
+
+# ----------------------------------------------------
+# Copy assets to the build directory
+# ----------------------------------------------------
+add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${PROJECT_SOURCE_DIR}/shaders
+	$<TARGET_FILE_DIR:${PROJ_NAME}>/shaders
+)
