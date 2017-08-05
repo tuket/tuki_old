@@ -53,7 +53,6 @@ private:
 	UnifType getUnifType(glm::uvec4) const { return UnifType::UINT4; }
 	///UnifType getUnifType(TextureId )
 
-
 };
 
 class Material

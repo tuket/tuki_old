@@ -1,5 +1,4 @@
-#ifndef MESH_HPP
-#define MESH_HPP
+#pragma once
 
 enum class EGeomType
 {
@@ -69,7 +68,7 @@ const unsigned ATTRIB_NUM_COMPONENTS[(int)EAttribLocation::NUM_ATTRIBS] =
 };
 
 // MESH INTERFACE
-struct IMesh
+class IMesh
 {
 public:
 	virtual EGeomType getGeomType()const = 0;
@@ -82,18 +81,9 @@ public:
 };
 
 // COMMON STATIC TRIANGLE MESH
-struct Mesh : IMesh
-{
-	unsigned numVertices;
-	unsigned numTriangles;
-	
-	float* positions;
-	float* normals;
-	float* tangents;
-	float* colors;
-	float* texCoords;
-	unsigned* triangles;
-	
+class Mesh : public IMesh
+{	
+public:
 	Mesh()
 	{
 		numVertices = numTriangles = 0;
@@ -125,7 +115,17 @@ struct Mesh : IMesh
 
 	// release RAM
 	void free();
-	
+
+protected:
+	unsigned numVertices;
+	unsigned numTriangles;
+
+	float* positions;
+	float* normals;
+	float* tangents;
+	float* colors;
+	float* texCoords;
+	unsigned* triangles;
 };
 
 typedef int Vao;
@@ -141,10 +141,9 @@ struct VboSetFull
 // MESH IN THE GPU
 
 // abstract class for the many types of possible meshes in gpu
-struct IMeshGpu
+class IMeshGpu
 {
-	Vao vao;
-
+public:
 	virtual bool hasIndices()const = 0;
 	virtual EGeomType getGeomType()const = 0;
 	virtual EAttribBitMask getAttribBitMask()const = 0;
@@ -156,34 +155,40 @@ struct IMeshGpu
 
 	// fre GPU memory
 	virtual void free() = 0;
+
+protected:
+	Vao vao;
 };
 
 // can be used for any type of triangle mesh configuration
 // for better performance inherit from IMesh and make a more specific implementation
-struct MeshGpuGeneric : IMeshGpu
+class MeshGpuGeneric : public IMeshGpu
 {
-	VboSetFull vboSet;
-	EAttribBitMask attribBitMask;
-
+public:
 	bool hasIndices()const { return vboSet.indices >= 0; }
 	EGeomType getGeomType()const { return EGeomType::TRIANGLES; }
 	EAttribBitMask getAttribBitMask()const { return attribBitMask; }
 
 	void load(const IMesh& mesh);
-	void load(const Mesh& mesh);
 	void free();
+
+protected:
+	VboSetFull vboSet;
+	EAttribBitMask attribBitMask;
 };
 
-struct UvPlaneMeshGpu : IMeshGpu
+class UvPlaneMeshGpu : public IMeshGpu
 {
-	Vbo vbo;
-
+public:
 	bool hasIndices()const { return false; }
 	EGeomType getGeomType()const { return EGeomType::TRIANGLE_STRIP; }
 	EAttribBitMask getAttribBitMask()const { return EAttribBitMask::TEX_COORD; }
 
 	void load();
 	void free();
+
+protected:
+	Vbo vbo;
 };
 
 // free GPU memory
@@ -191,5 +196,4 @@ void freeVao(Vao vao);
 void freeVbo(Vbo vbo);
 void freeVaos(const Vao* vaos, unsigned num);
 void freeVbos(const Vbo* vbos, unsigned num);
-
-#endif
+void freeVboSet(const VboSetFull& vboSet);

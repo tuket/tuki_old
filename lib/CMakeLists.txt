@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(PROJ_NAME tuki_lib)
+set(PROJ_NAME "tuki_lib")
 project(${PROJ_NAME})
 
 # this function preppends a path to all files in a list
@@ -37,10 +37,10 @@ set(SRC_UTIL
 # ADD _LIBRARY
 # ----------------------------------------------------
 
-PREPEND(SRC_RENDER_MESH "src/render/mesh" ${SRC_RENDER_MESH})
-PREPEND(SRC_RENDER_SHADER "src/render/shader" ${SRC_RENDER_SHADER})
-PREPEND(SRC_RENDER_MATERIAL "src/render/material" ${SRC_RENDER_MATERIAL})
-PREPEND(SRC_UTIL "src/util" ${SRC_UTIL})
+PREPEND(SRC_RENDER_MESH "src/tuki/render/mesh" ${SRC_RENDER_MESH})
+PREPEND(SRC_RENDER_SHADER "src/tuki/render/shader" ${SRC_RENDER_SHADER})
+PREPEND(SRC_RENDER_MATERIAL "src/tuki/render/material" ${SRC_RENDER_MATERIAL})
+PREPEND(SRC_UTIL "src/tuki/util" ${SRC_UTIL})
 
 add_library(${PROJ_NAME}
 	${SRC_RENDER_MESH}

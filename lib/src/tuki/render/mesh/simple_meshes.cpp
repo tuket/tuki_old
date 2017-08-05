@@ -11,8 +11,8 @@ namespace SimpleMeshes
 {
 
 
-Mesh createHorizontalPlane(float width = 1, float depth = 1,
-    unsigned widthDivisions = 1, unsigned depthDivisions = 1)
+Mesh createHorizontalPlane(float width, float depth,
+    unsigned widthDivisions, unsigned depthDivisions)
 {
     Mesh mesh;
 
@@ -78,28 +78,14 @@ Mesh createHorizontalPlane(float width = 1, float depth = 1,
     return mesh;
 }
 
-Mesh createScreenUvPlane(float width, float height)
+UvPlaneMeshGpu createScreenUvPlane(float width, float height)
 {
-    const unsigned numVerts = 4;
-    const float planeUVCoords[2 * numVerts] =
-    {
-        0, 0,
-        1, 0,
-        0, 1,
-        1, 1
-    };
-
-    glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	glGenBuffers(1, &vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, numVerts * sizeof(float) * 2,
-		planeUVCoords, GL_STATIC_DRAW);
-	glVertexAttribPointer((unsigned)EAttribLocation::TEX_COORD, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-	glEnableVertexAttribArray((unsigned)EAttribLocation::TEX_COORD);
+	UvPlaneMeshGpu mesh;
+	mesh.load();
+	return mesh;
 }
 
-Mesh createBox(float width = 1, float height = 1, float depth = 1)
+Mesh createBox(float width, float height, float depth)
 {
 	const unsigned numQuads = 6;
 	const unsigned nv = 4 * numQuads;

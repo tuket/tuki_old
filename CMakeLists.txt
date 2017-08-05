@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(PROJ_NAME tuki)
+set(PROJ_NAME "tuki")
 project(${PROJ_NAME})
 
 # try to use C++ 11
@@ -38,6 +38,9 @@ add_subdirectory("externals/glad")
 # zlib
 add_subdirectory("externals/zlib")
 
+# pugixml
+add_subdirectory("externals/pugixml")
+
 # assimp
 option(ASSIMP_BUILD_ASSIMP_TOOLS ON)
 option(ASSIMP_BUILD_SAMPLES OFF)
@@ -55,6 +58,8 @@ set(INCLUDE_DIRS
 	"externals/stbi"
 	"externals/glad/include"
 	"externals/assimp/include"
+	
+	"lib"
 )
 include_directories(${INCLUDE_DIRS})
 
@@ -63,4 +68,5 @@ include_directories(${INCLUDE_DIRS})
 # ----------------------------------------------------
 
 add_subdirectory("lib")
+add_subdirectory("test_tuki")
 #add_subdirectory("editor")

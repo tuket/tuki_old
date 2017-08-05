@@ -32,6 +32,10 @@ bool Shader::compile()
 	assert(shaderId >= 0 && "Attempted to compile shader before loading source");
 
 	glCompileShader(shaderId);
+
+	// TODO: Check errors
+
+	return true;
 }
 
 void Shader::destroy()
@@ -168,12 +172,12 @@ void ShaderProgram::uploadUniform(int location, const ivec2& value)
 	glUniform2iv(location, 1, &value[0]);
 }
 
-void ShaderProgram::uploadUniform(int location, const ivec2& value)
+void ShaderProgram::uploadUniform(int location, const ivec3& value)
 {
 	glUniform3iv(location, 1, &value[0]);
 }
 
-void ShaderProgram::uploadUniform(int location, const ivec2& value)
+void ShaderProgram::uploadUniform(int location, const ivec4& value)
 {
 	glUniform4iv(location, 1, &value[0]);
 }

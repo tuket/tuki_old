@@ -1,5 +1,4 @@
-#ifndef SHADER_HPP
-#define SHADER_HPP
+#pragma once
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -111,8 +110,8 @@ public:
 	void uploadUniform(int location, const glm::vec4& value);
 	void uploadUniform(int location, int value);
 	void uploadUniform(int location, const glm::ivec2& value);
-	void uploadUniform(int location, const glm::ivec2& value);
-	void uploadUniform(int location, const glm::ivec2& value);
+	void uploadUniform(int location, const glm::ivec3& value);
+	void uploadUniform(int location, const glm::ivec4& value);
 	void uploadUniform(int location, const glm::mat2& value);
 	void uploadUniform(int location, const glm::mat3& value);
 	void uploadUniform(int location, const glm::mat4& value);
@@ -155,5 +154,3 @@ inline EUnifType getUnifType(glm::mat2x4) { return EUnifType::MATRIX_2x4; }
 inline EUnifType getUnifType(glm::mat4x2) { return EUnifType::MATRIX_4x2; }
 inline EUnifType getUnifType(glm::mat3x4) { return EUnifType::MATRIX_3x4; }
 inline EUnifType getUnifType(glm::mat4x3) { return EUnifType::MATRIX_4x3; }
-
-#endif
