@@ -4,6 +4,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/matrix.hpp>
+#include <string>
 
 typedef int ShaderId;
 
@@ -30,36 +31,48 @@ enum class EUnifType
 // SHADER
 class Shader
 {
+public:
+	enum class Status
+	{
+		START,
+		LOADED,
+		LOAD_ERROR,
+		COMPILED,
+		COMPILE_ERROR,
+		DESTROYED = START
+	};
 
 protected:
 
-	Shader() : shaderId(-1) {}
+	Shader() : shaderId(-1), status(Status::START) {}
 
 	void loadFromString(const char* src, unsigned type);
 	void loadFromFile(const char* fileName, unsigned type);
 
 public:
-	
+	Status getStatus()const { return status; }
+	ShaderId getId()const { return shaderId; }
+
 	virtual void loadFromString(const char* src) = 0;
 	virtual void loadFromFile(const char* fileName) = 0;
+	bool isLoaded()const { return status == Status::LOADED; }
 
-	bool isLoaded() const { return shaderId >= 0; }
-
-	ShaderId getId() const { return shaderId; }
-
-	// returns false on failure
-	bool compile();
+	void compile();
+	bool hasCompiledOk()const { return status == Status::COMPILED; }
+	std::string getCompileError()const;
 
 	void destroy();
 
 protected:
 	ShaderId shaderId;
+	Status status;
 };
 
 // VERTEX SHADER
 class VertexShader : public Shader
 {
 public:
+	VertexShader() : Shader() {}
 	void loadFromString(const char* src);
 	void loadFromFile(const char* fileName);
 };
@@ -68,6 +81,7 @@ public:
 class FragmentShader : public Shader
 {
 public:
+	FragmentShader() : Shader() {}
 	void loadFromString(const char* src);
 	void loadFromFile(const char* fileName);
 };
@@ -76,6 +90,7 @@ public:
 class GeometryShader : public Shader
 {
 public:
+	GeometryShader() : Shader() {}
 	void loadFromString(const char* src);
 	void loadFromFile(const char* fileName);
 };
@@ -85,8 +100,14 @@ public:
 class ShaderProgram
 {
 public:
+
+	enum class Status
+	{
+		START,
+		// CURRENT CODING POINT
+	};
 	
-	ShaderProgram() : program(-1), compiledOk(false) {}
+	ShaderProgram() : program(-1){}
 
 	void setVertexShader(VertexShader vertShad) { this->vertShad = vertShad; }
 	void setFragmentShader(FragmentShader fragShad) { this->fragShad = fragShad;  }
@@ -95,10 +116,11 @@ public:
 	bool hasGeometryShader() { return geomShad.isLoaded(); }
 
 	// return false if fail
-	bool compile();
 	bool link();
 
 	void use();
+
+	void free();
 
 	// uniform uploaders
 	void uploadUniform(int location, float value);
@@ -127,7 +149,6 @@ protected:
 	FragmentShader fragShad;
 	GeometryShader geomShad;
 
-	bool compiledOk;
 };
 
 inline EUnifType getUnifType(float) { return EUnifType::FLOAT; }

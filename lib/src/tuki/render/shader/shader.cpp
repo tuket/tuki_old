@@ -15,27 +15,55 @@ using namespace glm;
 void Shader::loadFromString(const char* src, unsigned type)
 {
 	// the shader has to be loaded only once, otherwise there will be memory leaks
-	assert(shaderId >= 0 && "The shader has been already loaded");
+	assert(shaderId < 0 && "The shader has been already loaded");
 
 	shaderId = glCreateShader(type);
 	glShaderSource(shaderId, 1, &src, 0);
+
+	status = Status::LOADED;
 }
 
 void Shader::loadFromFile(const char* fileName, unsigned type)
 {
-	string src = loadStringFromFile(fileName);
-	loadFromString(src.c_str());
+	try
+	{
+		string src = loadStringFromFile(fileName);
+		loadFromString(src.c_str());
+		status = Status::LOADED;
+	}
+	catch (runtime_error e)
+	{
+		cout << e.what() << endl;
+		status = Status::LOAD_ERROR;
+	}
 }
 
-bool Shader::compile()
+void Shader::compile()
 {
-	assert(shaderId >= 0 && "Attempted to compile shader before loading source");
+	assert(status == Status::LOADED && "Attempted to compile shader before loading source");
 
 	glCompileShader(shaderId);
 
-	// TODO: Check errors
+	GLint compiled;
+	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &compiled);
+	if (!compiled)
+	{
+		status = Status::COMPILE_ERROR;
+	}
 
-	return true;
+	status = Status::COMPILED;
+}
+
+string Shader::getCompileError()const
+{
+	assert(status == Status::COMPILE_ERROR && "Attempted to get compile error of a shader that didn't fail compiling");
+
+	GLint logLen;
+	glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &logLen);
+	string logString(logLen, ' ');
+	glGetShaderInfoLog(shaderId, logLen, NULL, &logString[0]);
+	glDeleteShader(shaderId);
+	return logString;
 }
 
 void Shader::destroy()
@@ -43,6 +71,7 @@ void Shader::destroy()
 	assert(shaderId >= 0 && "Attempted to destroy shader before creating it");
 
 	glDeleteShader(shaderId);
+	status = Status::DESTROYED;
 }
 
 // VERTEX SHADER
@@ -82,30 +111,12 @@ void GeometryShader::loadFromFile(const char* fileName)
 
 
 // SHADER PROGRAM
-bool ShaderProgram::compile()
-{
-	assert(vertShad.isLoaded() && "Vertex shader is mandatory");
-	assert(fragShad.isLoaded() && "Fragment shader is mandatory");
-
-	if(!vertShad.compile()) return false;
-	if(!fragShad.compile()) return false;
-	if (geomShad.isLoaded())
-	{
-		if(!geomShad.compile()) return false;
-	}
-
-	program = glCreateProgram();
-	glAttachShader(program, vertShad.getId());
-	glAttachShader(program, fragShad.getId());
-	if (hasGeometryShader()) glAttachShader(program, geomShad.getId());
-
-	compiledOk = true;
-	return true;
-}
 
 bool ShaderProgram::link()
 {
-	assert(compiledOk && "Attempted to link shader program before compiling ok");
+	const bool compiledOk = vertShad.hasCompiledOk() && fragShad.hasCompiledOk() &&
+		(!hasGeometryShader() || (hasGeometryShader() && geomShad.hasCompiledOk()));
+	assert(compiledOk && "Attempted to link shader program with uncompiled objects");
 
 	glLinkProgram(program);
 	int linkedOk;
@@ -131,6 +142,10 @@ bool ShaderProgram::link()
 		return false;
 	}
 
+	if (vertShad.getId() >= 0) glDetachShader(program, vertShad.getId());
+	if (fragShad.getId() >= 0) glDetachShader(program, fragShad.getId());
+	if (geomShad.getId() >= 0) glDetachShader(program, geomShad.getId());
+
 	return true;
 }
 
@@ -139,6 +154,13 @@ void ShaderProgram::use()
 	assert(program >= 0 && "Attempted to use an invalid shader program");
 
 	glUseProgram(program);
+}
+
+void ShaderProgram::free()
+{
+	assert(program >= 0 && "Attempted to free an invalid shader program");
+
+	glDeleteProgram(program);
 }
 
 // UNIFORM UPLOADERS

@@ -53,9 +53,17 @@ int main(int argc, char** argv)
 	VertexShader vertShad;
 	vertShad.loadFromFile("shaders/uv_quad.vs");
 	vertShad.compile();
+	if (!vertShad.hasCompiledOk())
+	{
+		cout << vertShad.getCompileError() << endl;
+	}
 	FragmentShader fragShad;
 	fragShad.loadFromFile("shaders/uv_quad.fs");
 	fragShad.compile();
+	if (!fragShad.hasCompiledOk())
+	{
+		cout << fragShad.getCompileError() << endl;
+	}
 	ShaderProgram prog;
 	prog.setVertexShader(vertShad);
 	prog.setFragmentShader(fragShad);
