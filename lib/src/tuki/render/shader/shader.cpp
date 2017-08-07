@@ -112,41 +112,62 @@ void GeometryShader::loadFromFile(const char* fileName)
 
 // SHADER PROGRAM
 
-bool ShaderProgram::link()
+void ShaderProgram::init()
+{
+	program = glCreateProgram();
+}
+
+void ShaderProgram::bindAttrib(const char* name, int loc)
+{
+	glBindAttribLocation(program, loc, name);
+}
+
+void ShaderProgram::setVertexShader(VertexShader vertShad)
+{
+	this->vertShad = vertShad;
+	glAttachShader(program, vertShad.getId());
+}
+
+void ShaderProgram::setFragmentShader(FragmentShader fragShad)
+{
+	this->fragShad = fragShad;
+	glAttachShader(program, fragShad.getId());
+}
+
+void ShaderProgram::setGeometryShader(GeometryShader geomShad)
+{
+	this->geomShad = geomShad;
+	glAttachShader(program, geomShad.getId());
+}
+
+void ShaderProgram::link()
 {
 	const bool compiledOk = vertShad.hasCompiledOk() && fragShad.hasCompiledOk() &&
 		(!hasGeometryShader() || (hasGeometryShader() && geomShad.hasCompiledOk()));
 	assert(compiledOk && "Attempted to link shader program with uncompiled objects");
 
 	glLinkProgram(program);
-	int linkedOk;
-	glGetProgramiv(program, GL_LINK_STATUS, &linkedOk);
 
 	// check if the linking failed
-	if (!linkedOk)
-	{
-		// print error
-		GLint len;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
-		char *logString = new char[len];
-		glGetProgramInfoLog(program, len, NULL, logString);
-		cout << "Error: " << logString << endl;
-		delete[] logString;
-
-		// delete the program
-		// note: we don't delete shader objects because they
-		// could be beeing used by another program
-		glDeleteProgram(program);
-		program = -1;
-
-		return false;
-	}
-
+	int linkedOk;
+	glGetProgramiv(program, GL_LINK_STATUS, &linkedOk);
+	if (!linkedOk) status = Status::LINK_ERROR;
+	else status = Status::LINKED;
+	
 	if (vertShad.getId() >= 0) glDetachShader(program, vertShad.getId());
 	if (fragShad.getId() >= 0) glDetachShader(program, fragShad.getId());
 	if (geomShad.getId() >= 0) glDetachShader(program, geomShad.getId());
+}
 
-	return true;
+string ShaderProgram::getLinkError()const
+{
+	assert(status == Status::LINK_ERROR && "Attempted to get link error message without having failed");
+
+	GLint len;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+	string str = string(len, ' ');
+	glGetProgramInfoLog(program, len, NULL, &str[0]);
+	return str;
 }
 
 void ShaderProgram::use()
@@ -163,6 +184,10 @@ void ShaderProgram::free()
 	glDeleteProgram(program);
 }
 
+int ShaderProgram::getUniformLocation(const char* name)const
+{
+	return glGetUniformLocation(program, name);
+}
 // UNIFORM UPLOADERS
 void ShaderProgram::uploadUniform(int location, float value)
 {

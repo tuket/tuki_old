@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <tuki/render/shader/shader.hpp>
 #include <tuki/render/mesh/simple_meshes.hpp>
+#include <tuki/render/mesh/attrib_initializers.hpp>
 
 using namespace std;
 
@@ -65,9 +66,15 @@ int main(int argc, char** argv)
 		cout << fragShad.getCompileError() << endl;
 	}
 	ShaderProgram prog;
+	prog.init();
 	prog.setVertexShader(vertShad);
 	prog.setFragmentShader(fragShad);
+	AttribInitilizers::uv(prog);
 	prog.link();
+	if (!prog.hasLinkedOk())
+	{
+		cout << prog.getLinkError() << endl;
+	}
 
 	UvPlaneMeshGpu uvPlane;
 	uvPlane.load();

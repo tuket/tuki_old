@@ -104,24 +104,31 @@ public:
 	enum class Status
 	{
 		START,
-		// CURRENT CODING POINT
+		LINKED,
+		LINK_ERROR,
+		DESTROYED = START
 	};
 	
 	ShaderProgram() : program(-1){}
 
-	void setVertexShader(VertexShader vertShad) { this->vertShad = vertShad; }
-	void setFragmentShader(FragmentShader fragShad) { this->fragShad = fragShad;  }
-	void setGeometryShader(GeometryShader geomShad) { this->geomShad = geomShad; }
+	void setVertexShader(VertexShader vertShad);
+	void setFragmentShader(FragmentShader fragShad);
+	void setGeometryShader(GeometryShader geomShad);
 
 	bool hasGeometryShader() { return geomShad.isLoaded(); }
 
-	// return false if fail
-	bool link();
+	Status getStatus()const { return status; }
+	bool hasLinkedOk()const { return status == Status::LINKED; }
+	std::string getLinkError()const;
 
+	// these 4 function are intended to be used in order
+	void init();
+	void bindAttrib(const char* name, int loc);
+	void link();
 	void use();
-
 	void free();
 
+	int getUniformLocation(const char* name)const;
 	// uniform uploaders
 	void uploadUniform(int location, float value);
 	void uploadUniform(int location, const glm::vec2& value);
@@ -140,6 +147,12 @@ public:
 	void uploadUniform(int location, const glm::mat4x2& value);
 	void uploadUniform(int location, const glm::mat3x4& value);
 	void uploadUniform(int location, const glm::mat4x3& value);
+	template <typename T>
+	void uploadUniform(const char* name, const T& value)
+	{
+		int loc = getUniformLocation(name);
+		uploadUniform(loc, value);
+	}
 
 
 protected:
@@ -148,6 +161,7 @@ protected:
 	VertexShader vertShad;
 	FragmentShader fragShad;
 	GeometryShader geomShad;
+	Status status;
 
 };
 

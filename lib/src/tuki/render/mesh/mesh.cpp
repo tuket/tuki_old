@@ -5,6 +5,19 @@
 #include <cstring>
 #include <cassert>
 
+const char* ATTRIB_NAMES[(int)EAttribLocation::NUM_ATTRIBS] =
+{
+	"pos",
+	"color",
+	"texCoord",
+	"normal",
+	"tangent",
+	"bitangent",
+	"texCoord1",
+	"texCoord2",
+	"texCoord3"
+};
+
 // upload vertex attrib data and set the pointer
 inline void setVertexAttrib(
 	int attribLocation, Vbo vbo, unsigned numVerts, unsigned numDims, const void* data)
@@ -103,7 +116,7 @@ void UvPlaneMeshGpu::load()
 	glGenBuffers(1, (GLuint*)&vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	glBufferData(GL_ARRAY_BUFFER, nv * 2 * sizeof(float), (void*)uvCoords, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uvCoords), (void*)uvCoords, GL_STATIC_DRAW);
 	glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(loc);
 }

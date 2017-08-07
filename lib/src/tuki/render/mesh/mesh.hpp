@@ -1,5 +1,7 @@
 #pragma once
 
+#include "attrib_initializers.hpp"
+
 enum class EGeomType
 {
 	POINTS,
@@ -66,6 +68,8 @@ const unsigned ATTRIB_NUM_COMPONENTS[(int)EAttribLocation::NUM_ATTRIBS] =
 	2,		// TEX_COORD_2
 	2,		// TEX_COORD_3
 };
+
+extern const char* ATTRIB_NAMES[];
 
 // MESH INTERFACE
 class IMesh
@@ -147,6 +151,7 @@ public:
 	virtual bool hasIndices()const = 0;
 	virtual EGeomType getGeomType()const = 0;
 	virtual EAttribBitMask getAttribBitMask()const = 0;
+	virtual AttribInitilizer getAttribInitializer()const { return AttribInitilizers::generic; }
 
 	void bind()const;
 
