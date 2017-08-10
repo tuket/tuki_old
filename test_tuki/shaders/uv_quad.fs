@@ -1,6 +1,11 @@
 #version 330 core
 
+uniform vec3 color;
+
+in vec2 p;
+
 void main()
 {
-    gl_FragColor = vec4(0, 1, 0, 1);
+    if(p.y > sin(p.x * 10)) gl_FragColor = vec4(color, 1);
+    else gl_FragColor = vec4(1-color, 1);
 }

@@ -15,17 +15,23 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++0x support. Please use a different C++ compiler.")
 endif()
 
-add_executable(${PROJ_NAME}
-	"main.cpp"
+add_executable("test1"
+	"test1.cpp"
 )
 
-target_link_libraries(${PROJ_NAME} "tuki_lib")
+add_executable("test2"
+	"test2.cpp"
+)
+
+target_link_libraries("test1" "tuki_lib")
+target_link_libraries("test2" "tuki_lib")
 
 # ----------------------------------------------------
 # Copy assets to the build directory
 # ----------------------------------------------------
-add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
+add_custom_target("copy_shaders")
+add_custom_command(TARGET "copy_shaders" POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 	${PROJECT_SOURCE_DIR}/shaders
-	$<TARGET_FILE_DIR:${PROJ_NAME}>/shaders
+	$<TARGET_FILE_DIR:test1>/shaders
 )

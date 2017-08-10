@@ -7,15 +7,15 @@
 
 const char* ATTRIB_NAMES[(int)EAttribLocation::NUM_ATTRIBS] =
 {
-	"pos",
-	"color",
-	"texCoord",
-	"normal",
-	"tangent",
-	"bitangent",
-	"texCoord1",
-	"texCoord2",
-	"texCoord3"
+	"attribPos",
+	"attribColor",
+	"attribTexCoord",
+	"attribNormal",
+	"attribTangent",
+	"attribBitangent",
+	"attribTexCoord1",
+	"attribTexCoord2",
+	"attribTexCoord3"
 };
 
 // upload vertex attrib data and set the pointer

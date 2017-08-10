@@ -5,8 +5,10 @@
 #include <tuki/render/shader/shader.hpp>
 #include <tuki/render/mesh/simple_meshes.hpp>
 #include <tuki/render/mesh/attrib_initializers.hpp>
+#include <glm/glm.hpp>
 
 using namespace std;
+using namespace glm;
 
 const unsigned SCREEN_WIDTH = 800;
 const unsigned SCREEN_HEIGHT = 600;
@@ -50,16 +52,16 @@ int main(int argc, char** argv)
 	glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_CULL_FACE);
-	
+
 	VertexShader vertShad;
-	vertShad.loadFromFile("shaders/uv_quad.vs");
+	vertShad.loadFromFile("shaders/test2.vs");
 	vertShad.compile();
 	if (!vertShad.hasCompiledOk())
 	{
 		cout << vertShad.getCompileError() << endl;
 	}
 	FragmentShader fragShad;
-	fragShad.loadFromFile("shaders/uv_quad.fs");
+	fragShad.loadFromFile("shaders/test2.fs");
 	fragShad.compile();
 	if (!fragShad.hasCompiledOk())
 	{
@@ -69,15 +71,19 @@ int main(int argc, char** argv)
 	prog.init();
 	prog.setVertexShader(vertShad);
 	prog.setFragmentShader(fragShad);
-	AttribInitilizers::uv(prog);
+	AttribInitilizers::generic(prog);
 	prog.link();
 	if (!prog.hasLinkedOk())
 	{
 		cout << prog.getLinkError() << endl;
 	}
 
-	UvPlaneMeshGpu uvPlane;
-	uvPlane.load();
+	Mesh cubeMesh = SimpleMeshes::createBox(0.5, 0.5, 0.5);
+	MeshGpuGeneric cube;
+	cube.load(cubeMesh);
+
+	// matrices
+	mat4 model = rotate()
 
 	static float prevTime = (float)SDL_GetTicks();
 	static float curTime = (float)SDL_GetTicks();
@@ -97,11 +103,11 @@ int main(int argc, char** argv)
 				run = false;
 			}
 		}
-		
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		prog.use();
-		uvPlane.bind();
+		cube.bind();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		SDL_GL_SwapWindow(window);

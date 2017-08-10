@@ -19,6 +19,7 @@ ENDFUNCTION(PREPEND)
 set(SRC_RENDER_MESH
 	"mesh.hpp" "mesh.cpp"
 	"simple_meshes.hpp" "simple_meshes.cpp"
+	"attrib_initializers.hpp" "attrib_initializers.cpp"
 )
 
 set(SRC_RENDER_SHADER
