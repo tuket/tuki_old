@@ -5,7 +5,7 @@
 #include <tuki/render/shader/shader.hpp>
 #include <tuki/render/mesh/simple_meshes.hpp>
 #include <tuki/render/mesh/attrib_initializers.hpp>
-#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 
 using namespace std;
 using namespace glm;
@@ -18,7 +18,7 @@ static bool run;
 
 int main(int argc, char** argv)
 {
-
+	
 	cout << SDL_GetBasePath() << endl;
 
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -83,7 +83,11 @@ int main(int argc, char** argv)
 	cube.load(cubeMesh);
 
 	// matrices
-	mat4 model = rotate()
+	mat4 model = rotate(radians(90.f), vec3(1, 1, 0));
+	mat4 view = mat4();
+	mat4 proj = perspective(radians(60.f), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 1000.f);
+	mat4 modelViewProj = proj * view * model;
+	prog.uploadUniform("modelViewProj", modelViewProj);
 
 	static float prevTime = (float)SDL_GetTicks();
 	static float curTime = (float)SDL_GetTicks();
@@ -108,7 +112,7 @@ int main(int argc, char** argv)
 
 		prog.use();
 		cube.bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glDrawArrays(GL_TRIANGLES, 0, cubeMesh.getNumIndices());
 
 		SDL_GL_SwapWindow(window);
 

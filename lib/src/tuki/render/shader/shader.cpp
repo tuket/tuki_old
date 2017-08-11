@@ -50,8 +50,10 @@ void Shader::compile()
 	{
 		status = Status::COMPILE_ERROR;
 	}
-
-	status = Status::COMPILED;
+	else
+	{
+		status = Status::COMPILED;
+	}
 }
 
 string Shader::getCompileError()const

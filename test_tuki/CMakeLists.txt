@@ -29,9 +29,11 @@ target_link_libraries("test2" "tuki_lib")
 # ----------------------------------------------------
 # Copy assets to the build directory
 # ----------------------------------------------------
-add_custom_target("copy_shaders")
-add_custom_command(TARGET "copy_shaders" POST_BUILD
+add_custom_target("copy_shaders" ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 	${PROJECT_SOURCE_DIR}/shaders
-	$<TARGET_FILE_DIR:test1>/shaders
+	${CMAKE_BINARY_DIR}/${PROJ_NAME}/shaders
 )
+
+add_dependencies("test1" "copy_shaders")
+add_dependencies("test2" "copy_shaders")

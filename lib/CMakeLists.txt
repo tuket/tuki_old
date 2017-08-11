@@ -54,7 +54,7 @@ add_library(${PROJ_NAME}
 # LINK LIBRARIES
 # ----------------------------------------------------
 set(LINK_LIBS
-	"SDL2" "SDL2main"
+	"SDL2-static" "SDL2main"
 	"pugixml"
 	"stbi"
 	"glad"

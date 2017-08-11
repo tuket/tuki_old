@@ -5,7 +5,7 @@ uniform mat4 modelViewProj;
 in vec3 attribPos;
 in vec3 attribColor;
 
-out varColor;
+out vec3 varColor;
 
 void main()
 {
