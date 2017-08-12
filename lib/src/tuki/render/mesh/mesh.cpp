@@ -81,7 +81,7 @@ void MeshGpuGeneric::load(const IMesh& mesh)
 	// elements
 	if (mesh.hasIndices())
 	{
-		glGenBuffers(1, (GLuint*)vboSet.attribs);
+		glGenBuffers(1, (GLuint*)&vboSet.indices);
 		setVertexIndices(vboSet.indices, ni, (void*)mesh.getIndices());
 	}
 	else

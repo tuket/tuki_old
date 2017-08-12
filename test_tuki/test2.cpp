@@ -16,6 +16,9 @@ const unsigned SCREEN_HEIGHT = 600;
 static SDL_Window* window;
 static bool run;
 
+float cubeAngle = 0.f;
+bool backFace = true;
+
 int main(int argc, char** argv)
 {
 	
@@ -51,7 +54,8 @@ int main(int argc, char** argv)
 
 	glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glEnable(GL_CULL_FACE);
+	if(backFace) glEnable(GL_CULL_FACE);
+	else		 glDisable(GL_CULL_FACE);
 
 	VertexShader vertShad;
 	vertShad.loadFromFile("shaders/test2.vs");
@@ -83,7 +87,7 @@ int main(int argc, char** argv)
 	cube.load(cubeMesh);
 
 	// matrices
-	mat4 model = rotate(radians(90.f), vec3(1, 1, 0));
+	mat4 model = translate(vec3(0, 0, -2)) * rotate(radians(90.f), vec3(1, 1, 0));
 	mat4 view = mat4();
 	mat4 proj = perspective(radians(60.f), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 1000.f);
 	mat4 modelViewProj = proj * view * model;
@@ -103,16 +107,40 @@ int main(int argc, char** argv)
 		SDL_Event event;
 		if (SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+			if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+					case SDLK_ESCAPE:
+						run = false;
+						break;
+					case SDLK_q:
+						backFace = !backFace;
+						if (backFace) glEnable(GL_CULL_FACE);
+						else		 glDisable(GL_CULL_FACE);
+						break;
+				}				
+			}
+			else if (event.type == SDL_QUIT)
+			{
 				run = false;
 			}
 		}
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		// rotate cube
+		cubeAngle += 5.f * dt;
+		model = translate(vec3(0, 0, -2)) *
+			rotate(radians(cubeAngle), vec3(0, 1, 0)) *
+			rotate(radians(90.f), vec3(1, 1, 0));
+		modelViewProj = proj * view * model;
+		prog.uploadUniform("modelViewProj", modelViewProj);
 
+		// draw
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		prog.use();
 		cube.bind();
-		glDrawArrays(GL_TRIANGLES, 0, cubeMesh.getNumIndices());
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);
 
 		SDL_GL_SwapWindow(window);
 
