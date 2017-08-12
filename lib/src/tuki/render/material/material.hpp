@@ -63,7 +63,6 @@ public:
 
 	void setUniform();
 
-
 private:
 	int shaderProgramId;
 
