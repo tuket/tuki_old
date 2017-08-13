@@ -2,7 +2,7 @@
 
 #include "attrib_initializers.hpp"
 
-enum class EGeomType
+enum class GeomType
 {
 	POINTS,
 	LINES,
@@ -12,7 +12,7 @@ enum class EGeomType
 	TRIANGLE_FAN
 };
 
-enum class EAttribLocation
+enum class AttribLocation
 {
 	POS = 0,	// must be 0!
 	COLOR,
@@ -26,37 +26,37 @@ enum class EAttribLocation
 
 	NUM_ATTRIBS
 };
-enum class EAttribBitMask
+enum class AttribBitMask
 {
 	NONE = 0,
-	POS = 1 << (unsigned)EAttribLocation::POS,
-	COLOR = 1 << (unsigned)EAttribLocation::COLOR,
-	TEX_COORD = 1 << (unsigned)EAttribLocation::TEX_COORD,
-	NORMAL = 1 << (unsigned)EAttribLocation::NORMAL,
-	TANGENT = 1 << (unsigned)EAttribLocation::TANGENT,
-	BITANGENT = 1 << (unsigned)EAttribLocation::BITANGENT,
-	TEX_COORD_1 = 1 << (unsigned)EAttribLocation::TEX_COORD_1,
-	TEX_COORD_2 = 1 << (unsigned)EAttribLocation::TEX_COORD_2,
-	TEX_COORD_3 = 1 << (unsigned)EAttribLocation::TEX_COORD_3,
+	POS = 1 << (unsigned)AttribLocation::POS,
+	COLOR = 1 << (unsigned)AttribLocation::COLOR,
+	TEX_COORD = 1 << (unsigned)AttribLocation::TEX_COORD,
+	NORMAL = 1 << (unsigned)AttribLocation::NORMAL,
+	TANGENT = 1 << (unsigned)AttribLocation::TANGENT,
+	BITANGENT = 1 << (unsigned)AttribLocation::BITANGENT,
+	TEX_COORD_1 = 1 << (unsigned)AttribLocation::TEX_COORD_1,
+	TEX_COORD_2 = 1 << (unsigned)AttribLocation::TEX_COORD_2,
+	TEX_COORD_3 = 1 << (unsigned)AttribLocation::TEX_COORD_3,
 };
-inline EAttribBitMask operator|(EAttribBitMask a, EAttribBitMask b)
+inline AttribBitMask operator|(AttribBitMask a, AttribBitMask b)
 {
-	return static_cast<EAttribBitMask>((int)a | (int)b);
+	return static_cast<AttribBitMask>((int)a | (int)b);
 }
-inline EAttribBitMask operator&(EAttribBitMask a, EAttribBitMask b)
+inline AttribBitMask operator&(AttribBitMask a, AttribBitMask b)
 {
-	return static_cast<EAttribBitMask>((int)a & (int)b);
+	return static_cast<AttribBitMask>((int)a & (int)b);
 }
-inline EAttribBitMask& operator |=(EAttribBitMask& a, EAttribBitMask b)
+inline AttribBitMask& operator |=(AttribBitMask& a, AttribBitMask b)
 {
 	return a = a | b;
 }
-inline EAttribBitMask& operator &=(EAttribBitMask& a, EAttribBitMask b)
+inline AttribBitMask& operator &=(AttribBitMask& a, AttribBitMask b)
 {
 	return a = a & b;
 }
 
-const unsigned ATTRIB_NUM_COMPONENTS[(int)EAttribLocation::NUM_ATTRIBS] =
+const unsigned ATTRIB_NUM_COMPONENTS[(int)AttribLocation::NUM_ATTRIBS] =
 {
 	3,		// POS
 	3,		// COLOR
@@ -75,11 +75,11 @@ extern const char* ATTRIB_NAMES[];
 class IMesh
 {
 public:
-	virtual EGeomType getGeomType()const = 0;
+	virtual GeomType getGeomType()const = 0;
 	virtual const unsigned* getIndices()const = 0;
 	virtual bool hasIndices()const { return getIndices() != nullptr; }
-	virtual const float* getAttribData(EAttribLocation index)const = 0;
-	virtual bool hasAttribData(EAttribLocation index)const { return getAttribData(index) != nullptr; }
+	virtual const float* getAttribData(AttribLocation index)const = 0;
+	virtual bool hasAttribData(AttribLocation index)const { return getAttribData(index) != nullptr; }
 	virtual unsigned getNumVertices()const = 0;
 	virtual unsigned getNumIndices()const = 0;
 };
@@ -95,9 +95,9 @@ public:
 		triangles = nullptr;
 	}
 
-	EGeomType getGeomType()const { return EGeomType::TRIANGLES; }
+	GeomType getGeomType()const { return GeomType::TRIANGLES; }
 	const unsigned* getIndices()const { return triangles; }
-	const float* getAttribData(EAttribLocation index)const;
+	const float* getAttribData(AttribLocation index)const;
 	unsigned getNumVertices()const { return numVertices; }
 	unsigned getNumIndices()const { return 3 * numTriangles; }
 	
@@ -137,7 +137,7 @@ typedef int Vbo;
 
 struct VboSetFull
 {
-	Vbo attribs[(int)EAttribLocation::NUM_ATTRIBS];
+	Vbo attribs[(int)AttribLocation::NUM_ATTRIBS];
 	// triangle indices
 	Vbo indices;
 };
@@ -149,8 +149,8 @@ class IMeshGpu
 {
 public:
 	virtual bool hasIndices()const = 0;
-	virtual EGeomType getGeomType()const = 0;
-	virtual EAttribBitMask getAttribBitMask()const = 0;
+	virtual GeomType getGeomType()const = 0;
+	virtual AttribBitMask getAttribBitMask()const = 0;
 	virtual AttribInitilizer getAttribInitializer()const { return AttribInitilizers::generic; }
 
 	void bind()const;
@@ -171,23 +171,23 @@ class MeshGpuGeneric : public IMeshGpu
 {
 public:
 	bool hasIndices()const { return vboSet.indices >= 0; }
-	EGeomType getGeomType()const { return EGeomType::TRIANGLES; }
-	EAttribBitMask getAttribBitMask()const { return attribBitMask; }
+	GeomType getGeomType()const { return GeomType::TRIANGLES; }
+	AttribBitMask getAttribBitMask()const { return attribBitMask; }
 
 	void load(const IMesh& mesh);
 	void free();
 
 protected:
 	VboSetFull vboSet;
-	EAttribBitMask attribBitMask;
+	AttribBitMask attribBitMask;
 };
 
 class UvPlaneMeshGpu : public IMeshGpu
 {
 public:
 	bool hasIndices()const { return false; }
-	EGeomType getGeomType()const { return EGeomType::TRIANGLE_STRIP; }
-	EAttribBitMask getAttribBitMask()const { return EAttribBitMask::TEX_COORD; }
+	GeomType getGeomType()const { return GeomType::TRIANGLE_STRIP; }
+	AttribBitMask getAttribBitMask()const { return AttribBitMask::TEX_COORD; }
 
 	void load();
 	void free();

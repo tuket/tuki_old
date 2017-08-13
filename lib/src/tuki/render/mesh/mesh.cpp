@@ -5,7 +5,7 @@
 #include <cstring>
 #include <cassert>
 
-const char* ATTRIB_NAMES[(int)EAttribLocation::NUM_ATTRIBS] =
+const char* ATTRIB_NAMES[(int)AttribLocation::NUM_ATTRIBS] =
 {
 	"attribPos",
 	"attribColor",
@@ -56,15 +56,15 @@ void MeshGpuGeneric::load(const IMesh& mesh)
 	const unsigned nv = mesh.getNumVertices();
 	const unsigned ni = mesh.getNumIndices();
 
-	attribBitMask = EAttribBitMask::NONE;
+	attribBitMask = AttribBitMask::NONE;
 
 	// vertex attributes
-	for (unsigned i = 0; i < (unsigned)EAttribLocation::NUM_ATTRIBS; i++)
+	for (unsigned i = 0; i < (unsigned)AttribLocation::NUM_ATTRIBS; i++)
 	{
-		EAttribLocation curAttrib = (EAttribLocation)i;
-		if (mesh.hasAttribData((EAttribLocation)i))
+		AttribLocation curAttrib = (AttribLocation)i;
+		if (mesh.hasAttribData((AttribLocation)i))
 		{
-			attribBitMask |= (EAttribBitMask)(1 << i);
+			attribBitMask |= (AttribBitMask)(1 << i);
 			const unsigned numComp = ATTRIB_NUM_COMPONENTS[i];
 			const void* data = mesh.getAttribData(curAttrib);
 			glGenBuffers(1, (GLuint*)&vboSet.attribs[i]);
@@ -108,7 +108,7 @@ void UvPlaneMeshGpu::load()
 		1, 1,
 		1, 0
 	};
-	const unsigned loc = (unsigned)EAttribLocation::TEX_COORD;
+	const unsigned loc = (unsigned)AttribLocation::TEX_COORD;
 
 	glGenVertexArrays(1, (GLuint*)&vao);
 	glBindVertexArray(vao);
@@ -149,7 +149,7 @@ void freeVbos(const Vbo* vbos, unsigned num)
 
 void freeVboSet(const VboSetFull& vboSet)
 {
-	const unsigned na = (unsigned)EAttribLocation::NUM_ATTRIBS;
+	const unsigned na = (unsigned)AttribLocation::NUM_ATTRIBS;
 	// we don't need to check if the vbos are valid because 0s are ignored by OpenGL API
 	// in the creation, we have been careful to initialize unused vbos to 0
 	for (unsigned i = 0; i < na; i++)
@@ -197,16 +197,16 @@ void Mesh::initTrianglesData
 	memcpy(this->triangles, triangles, 3 * nt * sizeof(unsigned));
 }
 
-const float* Mesh::getAttribData(EAttribLocation index)const
+const float* Mesh::getAttribData(AttribLocation index)const
 {
 	const float* dataPtr = nullptr;
 	switch (index)
 	{
-		case EAttribLocation::POS:		 dataPtr = positions; break;
-		case EAttribLocation::NORMAL:	 dataPtr = normals; break;
-		case EAttribLocation::TANGENT:	 dataPtr = tangents; break;
-		case EAttribLocation::COLOR:	 dataPtr = colors; break;
-		case EAttribLocation::TEX_COORD: dataPtr = texCoords; break;
+		case AttribLocation::POS:		 dataPtr = positions; break;
+		case AttribLocation::NORMAL:	 dataPtr = normals; break;
+		case AttribLocation::TANGENT:	 dataPtr = tangents; break;
+		case AttribLocation::COLOR:	 dataPtr = colors; break;
+		case AttribLocation::TEX_COORD: dataPtr = texCoords; break;
 	}
 	return dataPtr;
 }

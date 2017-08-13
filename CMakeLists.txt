@@ -55,7 +55,7 @@ set(INCLUDE_DIRS
 	"externals/SDL2/include"
 	"externals/pugixml/src"
 	"externals/glm/"
-	"externals/stbi"
+	"externals/stb"
 	"externals/glad/include"
 	"externals/assimp/include"
 	
