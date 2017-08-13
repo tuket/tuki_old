@@ -5,6 +5,7 @@
 #include <stbi.h>
 #include <glad/glad.h>
 #include <cmath>
+#include <SDL.h>
 
 const unsigned PIXEL_FORMAT_SIZE[(int)PixelFormat::COUNT] =
 {
@@ -18,6 +19,29 @@ const GLuint TO_GL_WRAP_MODE[(int)TextureWrapMode::COUNT] =
 	GL_MIRRORED_REPEAT,
 	GL_CLAMP_TO_EDGE,
 	GL_CLAMP_TO_BORDER
+};
+
+const GLuint TO_GL_TEXEL_FORMAT[(int)TexelFormat::COUNT] =
+{
+	GL_RGB8,
+	GL_RGBA8,
+	GL_DEPTH_COMPONENT16,
+	GL_DEPTH_COMPONENT24,
+	GL_DEPTH_COMPONENT32,
+	GL_DEPTH_COMPONENT,
+	GL_DEPTH24_STENCIL8
+};
+
+const TexelFormat TO_DEFAULT_TEXEL_FORMAT[(int)PixelFormat::COUNT] =
+{
+	TexelFormat::RGB8,
+	TexelFormat::RGBA8
+};
+
+const GLuint TO_GL_PIXEL_FORMAT[(int)PixelFormat::COUNT] =
+{
+	GL_RGB,
+	GL_RGBA
 };
 
 // IMAGE
@@ -101,7 +125,7 @@ void Texture::setWRapModeV(TextureWrapMode wrapMode)
 void Texture::setFilterMode(TextureFilterMode filterMode)
 {
 	this->filterMode = filterMode;
-	
+	resetFilterMode();
 }
 
 void Texture::resetFilterMode()
@@ -147,5 +171,65 @@ void Texture::generateMipmaps()
 	mipmapLevels = 1 + floor(log2(max(width, height)));
 	glBindTexture(GL_TEXTURE_2D, id);
 	glGenerateMipmap(GL_TEXTURE_2D);
+	resetFilterMode();
+}
+
+void Texture::save(const char* fileName, bool async)
+{
+
+}
+
+void Texture::free()
+{
+	glDeleteTextures(1, (GLuint*)&id);
+}
+
+Texture Texture::createEmpty(unsigned width, unsigned height, TexelFormat texelFormat = TexelFormat::RGBA8)
+{
+	Texture texture;
+	glGenTextures(1, (GLuint*)&texture.id);
+	glBindTexture(GL_TEXTURE_2D, texture.id);
+	glTexImage2D(GL_TEXTURE_2D, 0, TO_GL_TEXEL_FORMAT[(int)texelFormat],
+		width, height, 0,
+		0, 0,
+		(void*)0
+	);
+	texture.texelFormat = texelFormat;
+	texture.width = width;
+	texture.height = height;
+	texture.setWrapMode(TextureWrapMode::REPEAT);
+}
+
+Texture Texture::loadFromFile(const char* fileName, TexelFormat internalFormat)
+{
+	Texture texture;
+	glGenTextures(1, (GLuint*)&texture.id);
+	glBindTexture(GL_TEXTURE_2D, texture.id);
+
+	// load from file
+	Image img = Image::loadFromFile(fileName);
+
+	if (internalFormat == TexelFormat::COUNT)
+	{
+		// choose automatically
+		internalFormat = TO_DEFAULT_TEXEL_FORMAT[(int)img.getPixelFormat()];
+	}
+	GLuint glInternalFormat;
+	glInternalFormat = TO_GL_TEXEL_FORMAT[(int)internalFormat];
+
+	glTexImage2D(GL_TEXTURE_2D, 0,
+		glInternalFormat,
+		img.getWidth(), img.getHeight(), 0,
+		TO_GL_PIXEL_FORMAT[(int)img.getPixelFormat()], GL_UNSIGNED_BYTE,
+		img.getData());
+
+	texture.texelFormat = internalFormat;
+	texture.width = img.getWidth();
+	texture.height = img.getHeight();
+	texture.setWrapMode(TextureWrapMode::REPEAT);
+}
+
+Texture Texture::createFromImage(const Image& image)
+{
 
 }

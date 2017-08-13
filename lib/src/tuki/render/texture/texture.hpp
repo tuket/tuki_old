@@ -22,6 +22,7 @@ enum class TexelFormat
 	DEPTH16,
 	DEPTH24,
 	DEPTH32,
+	DEPTH_AUTO,		// OpenGL with choose automatically the resolution
 	DEPTH24_STENCIL8,
 
 	COUNT
@@ -62,6 +63,9 @@ public:
 	Image() : data(nullptr), width(-1), height(-1){}
 
 	PixelFormat getPixelFormat()const { return format; }
+
+	int getWidth()const { return width; }
+	int getHeight()const { return height; }
 
 	// return the size of one pixel in bytes
 	unsigned getPerPixelSize()const;
@@ -109,7 +113,7 @@ public:
 	void generateMipmaps();
 
 	// writes the texture to a file
-	void save();
+	void save(const char* fileName, bool async=false);
 
 	void free();
 
@@ -125,8 +129,9 @@ private:
 	unsigned mipmapLevels;
 
 public:
-	static Texture createEmpty(unsigned width, unsigned height, TexelFormat texFormat = TexelFormat::RGBA8);
-	static Texture loadFromFile(const char* fileName);
+	static Texture createEmpty(unsigned width, unsigned height, TexelFormat texelFormat = TexelFormat::RGBA8);
+	// if internalFormat is COUNT it will choose the best match automatically
+	static Texture loadFromFile(const char* fileName, TexelFormat internalFormat = TexelFormat::COUNT);
 	static Texture createFromImage(const Image& image);
 };
 
