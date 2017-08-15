@@ -32,6 +32,7 @@ set(SRC_RENDER_MATERIAL
 
 set(SRC_RENDER_TEXTURE
 	"texture.hpp" "texture.cpp"
+	"render_target.hpp" "render_target.cpp"
 )
 
 set(SRC_UTIL
