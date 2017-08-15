@@ -23,17 +23,39 @@ add_executable("test2"
 	"test2.cpp"
 )
 
-target_link_libraries("test1" "tuki_lib")
-target_link_libraries("test2" "tuki_lib")
+add_executable("test3"
+	"test3.cpp"
+)
+
+set("exec_targets"
+	"test1"
+	"test2"
+	"test3"
+)
+
+foreach(exec_target ${exec_targets})
+	target_link_libraries(${exec_target} "tuki_lib")
+endforeach(exec_target)
 
 # ----------------------------------------------------
 # Copy assets to the build directory
 # ----------------------------------------------------
-add_custom_target("copy_shaders" ALL
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	${PROJECT_SOURCE_DIR}/shaders
-	${CMAKE_BINARY_DIR}/${PROJ_NAME}/shaders
+
+set("asset_dirs"
+	"shaders"
+	"textures"
 )
 
-add_dependencies("test1" "copy_shaders")
-add_dependencies("test2" "copy_shaders")
+foreach(dir ${asset_dirs})
+add_custom_target("copy_${dir}" ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${PROJECT_SOURCE_DIR}/${dir}
+	${CMAKE_BINARY_DIR}/${PROJ_NAME}/${dir}
+)
+endforeach(dir)
+
+foreach(exec_target ${exec_targets})
+	foreach(asset_dir ${asset_dirs})
+		add_dependencies("${exec_target}" "copy_${asset_dir}")
+	endforeach(asset_dir)
+endforeach(exec_target)

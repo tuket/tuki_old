@@ -11,9 +11,6 @@ enum class PixelFormat
 	COUNT
 };
 
-// size in bytes
-const unsigned PIXEL_FORMAT_SIZE[(int)PixelFormat::COUNT];
-
 // The internal GPU formal of the texels
 enum class TexelFormat
 {
@@ -73,6 +70,10 @@ public:
 	const void* getData()const { return data; }
 	void* getData() { return data; }
 
+	unsigned getNumChannels()const;
+
+	void flipY();
+
 	void free();
 
 private:
@@ -97,6 +98,7 @@ public:
 	void bindToUnit(TextureUnit unit)const;
 
 	TexelFormat getTexelFormat()const { return texelFormat; }
+	unsigned getNumChannels()const;
 
 	TextureWrapMode getWrapMode()const { return wrapMode; }
 	void setWrapMode(TextureWrapMode wrapMode) { setWrapModeUv(wrapMode, wrapMode); }
@@ -112,8 +114,8 @@ public:
 	bool hasMipmaps()const { return mipmapLevels > 0; }
 	void generateMipmaps();
 
-	// writes the texture to a file
-	void save(const char* fileName, bool async=false);
+	// writes the texture to a file (for debugging purposes)
+	void save(const char* fileName, bool async=false, bool transparency=true);
 
 	void free();
 
@@ -132,6 +134,6 @@ public:
 	static Texture createEmpty(unsigned width, unsigned height, TexelFormat texelFormat = TexelFormat::RGBA8);
 	// if internalFormat is COUNT it will choose the best match automatically
 	static Texture loadFromFile(const char* fileName, TexelFormat internalFormat = TexelFormat::COUNT);
-	static Texture createFromImage(const Image& image);
+	static Texture createFromImage(const Image& image, TexelFormat internalFormat = TexelFormat::COUNT);
 };
 

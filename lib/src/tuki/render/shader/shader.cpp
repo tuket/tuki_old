@@ -6,6 +6,7 @@
 #include <cassert>
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
+#include "../texture/texture.hpp"
 
 using namespace std;
 using namespace glm;
@@ -274,4 +275,9 @@ void ShaderProgram::uploadUniform(int location, const mat3x4& value)
 void ShaderProgram::uploadUniform(int location, const mat4x3& value)
 {
 	glUniformMatrix4x3fv(location, 1, GL_FALSE, value_ptr(value));
+}
+
+void ShaderProgram::uploadUniform(int location, TextureUnit value)
+{
+	glUniform1i(location, (int)value);
 }

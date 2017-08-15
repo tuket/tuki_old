@@ -6,6 +6,8 @@
 #include <glm/matrix.hpp>
 #include <string>
 
+enum class TextureUnit;
+
 typedef int ShaderId;
 
 enum class ShaderType
@@ -147,6 +149,7 @@ public:
 	void uploadUniform(int location, const glm::mat4x2& value);
 	void uploadUniform(int location, const glm::mat3x4& value);
 	void uploadUniform(int location, const glm::mat4x3& value);
+	void uploadUniform(int location, TextureUnit value);
 	template <typename T>
 	void uploadUniform(const char* name, const T& value)
 	{

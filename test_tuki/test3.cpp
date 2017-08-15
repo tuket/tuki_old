@@ -5,6 +5,7 @@
 #include <tuki/render/shader/shader.hpp>
 #include <tuki/render/mesh/simple_meshes.hpp>
 #include <tuki/render/mesh/attrib_initializers.hpp>
+#include <tuki/render/texture/texture.hpp>
 
 using namespace std;
 
@@ -50,16 +51,16 @@ int main(int argc, char** argv)
 	glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_CULL_FACE);
-	
+
 	VertexShader vertShad;
-	vertShad.loadFromFile("shaders/uv_quad.vs");
+	vertShad.loadFromFile("shaders/test3.vs");
 	vertShad.compile();
 	if (!vertShad.hasCompiledOk())
 	{
 		cout << vertShad.getCompileError() << endl;
 	}
 	FragmentShader fragShad;
-	fragShad.loadFromFile("shaders/uv_quad.fs");
+	fragShad.loadFromFile("shaders/test3.fs");
 	fragShad.compile();
 	if (!fragShad.hasCompiledOk())
 	{
@@ -76,7 +77,9 @@ int main(int argc, char** argv)
 		cout << prog.getLinkError() << endl;
 	}
 
-	prog.uploadUniform("color", glm::vec3(1, 1, 0));
+	Texture texture = Texture::loadFromFile("textures/axis.png");
+	texture.bindToUnit(TextureUnit::COLOR);
+	prog.uploadUniform("texColor", TextureUnit::COLOR);
 
 	UvPlaneMeshGpu uvPlane;
 	uvPlane.load();
@@ -100,7 +103,7 @@ int main(int argc, char** argv)
 				run = false;
 			}
 		}
-		
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		prog.use();

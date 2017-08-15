@@ -6,11 +6,31 @@
 #include <glad/glad.h>
 #include <cmath>
 #include <SDL.h>
+#include <utility>
+#include <stb_image_write.h>
+#include <thread>
 
 const unsigned PIXEL_FORMAT_SIZE[(int)PixelFormat::COUNT] =
 {
 	3,		// RGB8
 	4,		// RGBA8
+};
+
+const unsigned PIXEL_NUM_CHANNELS[(int)PixelFormat::COUNT] =
+{
+	3,		// RGB8
+	4,		// RGBA8
+};
+
+const unsigned TEXEL_NUM_CHANNELS[(int)TexelFormat::COUNT] =
+{
+	3,		// RGB8
+	4,		// RGBA8
+	1,		// DEPTH16
+	1,		// DEPTH24
+	1,		// DEPTH32
+	1,		// DEPTH_AUTO
+	2,		// DEPTH24_STENCIL8
 };
 
 const GLuint TO_GL_WRAP_MODE[(int)TextureWrapMode::COUNT] =
@@ -52,6 +72,32 @@ unsigned Image::getPerPixelSize()const
 	return PIXEL_FORMAT_SIZE[(int)format];
 }
 
+unsigned Image::getNumChannels()const
+{
+	return PIXEL_NUM_CHANNELS[(int)format];
+}
+
+void Image::flipY()
+{
+	assert(data != nullptr);
+
+	unsigned h2 = height / 2;
+	unsigned w = width;
+	unsigned nc = getNumChannels();
+	unsigned char* d = (unsigned char*)data;
+
+	for (int y = 0; y < h2; y++)
+	for (int x = 0; x < w; x++)
+	for (int c = 0; c < nc; c++)
+	{
+		int y2 = height - y - 1;
+		std::swap(
+			d[(y  * w + x) * nc + c],
+			d[(y2 * w + x) * nc + c]
+		);
+	}
+}
+
 void Image::free()
 {
 	assert(data != nullptr);
@@ -69,13 +115,17 @@ Image Image::createEmpty(unsigned width, unsigned height, PixelFormat format)
 	image.width = width;
 	image.height = height;
 	memset(image.data, 0, imageSize);
+	return image;
 }
 
 Image Image::loadFromFile(const char* fileName)
 {
 	Image image;
 	int channels;
-	image.data = (fileName, &image.width, &image.height, &channels, 0);
+	image.data = stbi_load(fileName, &image.width, &image.height, &channels, 0);
+
+	assert(image.data != nullptr);
+
 	if (channels == 3)
 	{
 		image.format = PixelFormat::RGB8;
@@ -89,6 +139,7 @@ Image Image::loadFromFile(const char* fileName)
 		assert("image format not supported");
 	}
 
+	image.flipY();
 	return image;
 }
 
@@ -101,6 +152,11 @@ void Texture::bindToUnit(unsigned unit)const
 void Texture::bindToUnit(TextureUnit unit)const
 {
 	bindToUnit((unsigned)unit);
+}
+
+unsigned Texture::getNumChannels()const
+{
+	return TEXEL_NUM_CHANNELS[(int)texelFormat];
 }
 
 void Texture::setWrapModeUv(TextureWrapMode wrapModeU, TextureWrapMode wrapModeV)
@@ -174,9 +230,32 @@ void Texture::generateMipmaps()
 	resetFilterMode();
 }
 
-void Texture::save(const char* fileName, bool async)
+void Texture::save(const char* fileName, bool async, bool transparency)
 {
+	PixelFormat pixFormat = transparency ? PixelFormat::RGBA8 : PixelFormat::RGB8;
+	Image image = Image::createEmpty(width, height, pixFormat);
+	unsigned nc = PIXEL_NUM_CHANNELS[(int)pixFormat];
 
+	glBindTexture(GL_TEXTURE_2D, id);
+	glGetTexImage(GL_TEXTURE_2D, 0, TO_GL_PIXEL_FORMAT[(int)pixFormat], GL_UNSIGNED_BYTE, image.getData());
+
+	image.flipY();
+
+	auto saveToDisk =
+		[&]()
+		{
+			stbi_write_png(fileName, width, height, nc, image.getData(), nc * width);
+			image.free();
+		};
+
+	if (async)
+	{
+		std::thread(saveToDisk);
+	}
+	else
+	{
+		saveToDisk();
+	}
 }
 
 void Texture::free()
@@ -184,7 +263,7 @@ void Texture::free()
 	glDeleteTextures(1, (GLuint*)&id);
 }
 
-Texture Texture::createEmpty(unsigned width, unsigned height, TexelFormat texelFormat = TexelFormat::RGBA8)
+Texture Texture::createEmpty(unsigned width, unsigned height, TexelFormat texelFormat)
 {
 	Texture texture;
 	glGenTextures(1, (GLuint*)&texture.id);
@@ -198,16 +277,23 @@ Texture Texture::createEmpty(unsigned width, unsigned height, TexelFormat texelF
 	texture.width = width;
 	texture.height = height;
 	texture.setWrapMode(TextureWrapMode::REPEAT);
+	texture.setFilterMode(TextureFilterMode::NEAREST);
+	return texture;
 }
 
 Texture Texture::loadFromFile(const char* fileName, TexelFormat internalFormat)
 {
+	// load from file
+	Image img = Image::loadFromFile(fileName);
+
+	return createFromImage(img, internalFormat);
+}
+
+Texture Texture::createFromImage(const Image& img, TexelFormat internalFormat)
+{
 	Texture texture;
 	glGenTextures(1, (GLuint*)&texture.id);
 	glBindTexture(GL_TEXTURE_2D, texture.id);
-
-	// load from file
-	Image img = Image::loadFromFile(fileName);
 
 	if (internalFormat == TexelFormat::COUNT)
 	{
@@ -227,9 +313,6 @@ Texture Texture::loadFromFile(const char* fileName, TexelFormat internalFormat)
 	texture.width = img.getWidth();
 	texture.height = img.getHeight();
 	texture.setWrapMode(TextureWrapMode::REPEAT);
-}
-
-Texture Texture::createFromImage(const Image& image)
-{
-
+	texture.setFilterMode(TextureFilterMode::NEAREST);
+	return texture;
 }
