@@ -114,6 +114,8 @@ public:
 	bool hasMipmaps()const { return mipmapLevels > 0; }
 	void generateMipmaps();
 
+	void resize();
+
 	// writes the texture to a file (for debugging purposes)
 	void save(const char* fileName, bool async=false, bool transparency=true);
 
@@ -131,7 +133,8 @@ private:
 	unsigned mipmapLevels;
 
 public:
-	static Texture createEmpty(unsigned width, unsigned height, TexelFormat texelFormat = TexelFormat::RGBA8);
+	static Texture createEmpty(unsigned width, unsigned height,
+		TexelFormat texelFormat = TexelFormat::RGBA8);
 	// if internalFormat is COUNT it will choose the best match automatically
 	static Texture loadFromFile(const char* fileName, TexelFormat internalFormat = TexelFormat::COUNT);
 	static Texture createFromImage(const Image& image, TexelFormat internalFormat = TexelFormat::COUNT);

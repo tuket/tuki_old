@@ -2,6 +2,8 @@
 
 #include "texture.hpp"
 
+#include <vector>
+
 class RenderTarget
 {
 public:
@@ -15,10 +17,28 @@ public:
 	RenderTarget(
 		unsigned numTextures,
 		unsigned width, unsigned height,
-		TexelFormat* texelFormats,
+		const TexelFormat* texelFormats,	// array of texel formats for each texture
 		bool depthTex = false
 	);
 
-	TextureId getTexture(unsigned slot)const;
-	TextureId getDepthTexture()const;
+	TextureId getTextureId(unsigned slot)const;
+	TextureId getDepthTextureId()const;
+	unsigned getNumTextures()const;
+
+	void resize(unsigned width, unsigned height);
+
+	void bind();
+
+	unsigned getWidth()const { return width; }
+
+	static const unsigned MAX_NUM_TEXTURES = 16;
+
+private:
+
+	std::vector<TexelFormat> texelFormats;
+	std::vector<Texture> textures;
+	Texture depthTexture;
+	unsigned fbo;
+
+	unsigned width, height;
 };

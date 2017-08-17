@@ -230,6 +230,11 @@ void Texture::generateMipmaps()
 	resetFilterMode();
 }
 
+void Texture::resize()
+{
+	// CCIP
+}
+
 void Texture::save(const char* fileName, bool async, bool transparency)
 {
 	PixelFormat pixFormat = transparency ? PixelFormat::RGBA8 : PixelFormat::RGB8;
