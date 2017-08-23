@@ -114,7 +114,7 @@ public:
 	bool hasMipmaps()const { return mipmapLevels > 0; }
 	void generateMipmaps();
 
-	void resize();
+	void resize(unsigned width, unsigned height);
 
 	// writes the texture to a file (for debugging purposes)
 	void save(const char* fileName, bool async=false, bool transparency=true);

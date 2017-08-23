@@ -230,9 +230,18 @@ void Texture::generateMipmaps()
 	resetFilterMode();
 }
 
-void Texture::resize()
+void Texture::resize(unsigned width, unsigned height)
 {
-	// CCIP
+	glBindTexture(GL_TEXTURE_2D, id);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, TO_GL_TEXEL_FORMAT[(int)texelFormat],
+		width, height, 0,
+		0, 0,
+		(void*)0
+	);
+
+	this->width = width;
+	this->height = height;
 }
 
 void Texture::save(const char* fileName, bool async, bool transparency)

@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <cassert>
+#include "tuki/util/util.hpp"
 
 using namespace std;
 
@@ -97,8 +98,36 @@ void RenderTarget::resize(unsigned w, unsigned h)
 	// reserve space in textures
 	for (unsigned i = 0; i < nt; i++)
 	{
-		textures[i].resize(); // CCPI
+		textures[i].resize(w, h);
 	}
+	if (depthTexture.getId() >= 0)
+	{
+		depthTexture.resize(w, h);
+	}
+
+	// set up the fbo
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	for (unsigned i = 0; i < nt; i++)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+			GL_TEXTURE_2D, textures[i].getId(), 0);
+	}
+	if (depthTexture.getId() >= 0)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+			GL_TEXTURE_2D, depthTexture.getId(), 0);
+	}
+
+	// texture unit 0 -> color attachment 0, texture unit 1 -> color attachment 1, etc
+	static const std::array<int, MAX_NUM_TEXTURES> attachMap =
+		getNumberSequenceArray<0, MAX_NUM_TEXTURES>();
+	static const GLenum* drawBuffs = (const GLenum*)&attachMap[0];
+
+	glDrawBuffers(getNumTextures(), drawBuffs);
+
+	assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RenderTarget::bind()
