@@ -7,10 +7,10 @@
 using namespace std;
 
 RenderTarget::RenderTarget(
-	unsigned numTextures = 0,
-	unsigned width = 0, unsigned height = 0,
-	TexelFormat texelFormat = TexelFormat::RGBA8,
-	bool depthTex = false
+	unsigned numTextures,
+	unsigned width, unsigned height,
+	TexelFormat texelFormat,
+	bool depthTex
 )
 {
 	if (

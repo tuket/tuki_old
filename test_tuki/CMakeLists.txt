@@ -27,10 +27,15 @@ add_executable("test3"
 	"test3.cpp"
 )
 
+add_executable("test4"
+	"test4.cpp"
+)
+
 set("exec_targets"
 	"test1"
 	"test2"
 	"test3"
+	"test4"
 )
 
 foreach(exec_target ${exec_targets})
