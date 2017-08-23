@@ -15,6 +15,8 @@ using namespace glm;
 
 const unsigned SCREEN_WIDTH = 800;
 const unsigned SCREEN_HEIGHT = 600;
+const float INPUT_HZ = 100.f;
+const float INPUT_PERIOD = 1.f / INPUT_HZ;
 
 static SDL_Window* window;
 static bool run;
@@ -23,6 +25,9 @@ struct KeysStatus
 {
 	bool w, a, s, d;
 }keysStatus;
+
+int mouseX, mouseY, prevMouseX, prevMouseY;
+bool mousePressed;
 
 vec3 camPos(0, 0, 0);
 float camHeading = 0;
@@ -104,6 +109,13 @@ int main(int argc, char** argv)
 	mat4 modelViewProj = proj * view * model;
 	prog.uploadUniform("modelViewProj", modelViewProj);
 
+	// init mouse status
+	SDL_PumpEvents();
+	mousePressed = SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON(SDL_BUTTON_LEFT);
+	prevMouseX = mouseX;
+	prevMouseY = mouseY;
+
+	float inputTime = 0;
 	static float prevTime = (float)SDL_GetTicks();
 	static float curTime = (float)SDL_GetTicks();
 	run = true;
@@ -114,35 +126,50 @@ int main(int argc, char** argv)
 		float dt = (curTime - prevTime) / 1000.f;
 		prevTime = curTime;
 
-		SDL_Event event;
-		if (SDL_PollEvent(&event))
+		//cout << dt << endl;
+		if (dt > 0.01)
 		{
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE ||
-				event.type == SDL_QUIT)
+			cout << "----------------" << dt << endl;
+		}
+		inputTime += dt;
+		if (inputTime > INPUT_PERIOD)
+		{
+			/*SDL_Event event;
+			if (SDL_PollEvent(&event))
 			{
-				run = false;
+				if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE ||
+					event.type == SDL_QUIT)
+				{
+					run = false;
+				}
 			}
+
+			const Uint8* keys = SDL_GetKeyboardState(0);
+			keysStatus.w = keys[SDL_SCANCODE_W];
+			keysStatus.a = keys[SDL_SCANCODE_A];
+			keysStatus.s = keys[SDL_SCANCODE_S];
+			keysStatus.d = keys[SDL_SCANCODE_D];
+
+			prevMouseX = mouseX;
+			prevMouseY = mouseY;
+			mousePressed = SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON(SDL_BUTTON_LEFT);
+
+			cameraMovement(dt);
+			inputTime = 0;*/
 		}
 
-		const Uint8* keys = SDL_GetKeyboardState(0);
-		keysStatus.w = keys[SDL_SCANCODE_W];
-		keysStatus.a = keys[SDL_SCANCODE_A];
-		keysStatus.s = keys[SDL_SCANCODE_S];
-		keysStatus.d = keys[SDL_SCANCODE_D];
-
-		cameraMovement(dt);
-
-		view = translate(-camPos);
+		/*view = rotate(camHeading, vec3(0, 1, 0)) * translate(-camPos);
 		modelViewProj = proj * view * model;
-		prog.uploadUniform("modelViewProj", modelViewProj);
+		prog.uploadUniform("modelViewProj", modelViewProj);*/
 
 		// draw
-		axisTex.bindToUnit(TextureUnit::COLOR);
+		/*axisTex.bindToUnit(TextureUnit::COLOR);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		prog.use();
 		cube.bind();
-		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);
+		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);*/
 
+		SDL_Delay(5);
 		SDL_GL_SwapWindow(window);
 
 	}
@@ -154,8 +181,17 @@ int main(int argc, char** argv)
 void cameraMovement(float dt)
 {
 	const float SPEED = 1.f;
+	const float MOUSE_SENSITIVITY = 0.5f;
 
-	mat3 rot = rotate(camHeading, vec3(0, 1, 0));
+	// rotation with mouse
+	if (mousePressed)
+	{
+		float dx = mouseX - prevMouseX;
+		camHeading += dx * MOUSE_SENSITIVITY * dt;
+	}
+
+	// translation with keyboard
+	mat3 rot = rotate(-camHeading, vec3(0, 1, 0));
 	vec3 forward(0, 0, -1);
 	forward = rot * forward;
 	vec3 right(1, 0, 0);
