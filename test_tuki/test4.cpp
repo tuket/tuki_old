@@ -15,8 +15,6 @@ using namespace glm;
 
 const unsigned SCREEN_WIDTH = 800;
 const unsigned SCREEN_HEIGHT = 600;
-const float INPUT_HZ = 100.f;
-const float INPUT_PERIOD = 1.f / INPUT_HZ;
 
 static SDL_Window* window;
 static bool run;
@@ -56,6 +54,7 @@ int main(int argc, char** argv)
 		);
 
 	SDL_GLContext context = SDL_GL_CreateContext(window);
+	//SDL_GL_SetSwapInterval(1);
 
 	if (!gladLoadGL())
 	{
@@ -68,6 +67,9 @@ int main(int argc, char** argv)
 	std::cout << "Graphics card: " << gpuVendor << std::endl;
 
 	glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
 
 	VertexShader vertShad;
 	vertShad.loadFromFile("shaders/test4.vs");
@@ -115,7 +117,6 @@ int main(int argc, char** argv)
 	prevMouseX = mouseX;
 	prevMouseY = mouseY;
 
-	float inputTime = 0;
 	static float prevTime = (float)SDL_GetTicks();
 	static float curTime = (float)SDL_GetTicks();
 	run = true;
@@ -126,52 +127,45 @@ int main(int argc, char** argv)
 		float dt = (curTime - prevTime) / 1000.f;
 		prevTime = curTime;
 
-		//cout << dt << endl;
-		if (dt > 0.01)
+		if (dt > 0.1)
 		{
 			cout << "----------------" << dt << endl;
 		}
-		inputTime += dt;
-		if (inputTime > INPUT_PERIOD)
+
+		SDL_Event event;
+		if (SDL_PollEvent(&event))
 		{
-			/*SDL_Event event;
-			if (SDL_PollEvent(&event))
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE ||
+				event.type == SDL_QUIT)
 			{
-				if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE ||
-					event.type == SDL_QUIT)
-				{
-					run = false;
-				}
+				run = false;
 			}
-
-			const Uint8* keys = SDL_GetKeyboardState(0);
-			keysStatus.w = keys[SDL_SCANCODE_W];
-			keysStatus.a = keys[SDL_SCANCODE_A];
-			keysStatus.s = keys[SDL_SCANCODE_S];
-			keysStatus.d = keys[SDL_SCANCODE_D];
-
-			prevMouseX = mouseX;
-			prevMouseY = mouseY;
-			mousePressed = SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON(SDL_BUTTON_LEFT);
-
-			cameraMovement(dt);
-			inputTime = 0;*/
 		}
 
-		/*view = rotate(camHeading, vec3(0, 1, 0)) * translate(-camPos);
+		const Uint8* keys = SDL_GetKeyboardState(0);
+		keysStatus.w = keys[SDL_SCANCODE_W];
+		keysStatus.a = keys[SDL_SCANCODE_A];
+		keysStatus.s = keys[SDL_SCANCODE_S];
+		keysStatus.d = keys[SDL_SCANCODE_D];
+
+		prevMouseX = mouseX;
+		prevMouseY = mouseY;
+		mousePressed = SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON(SDL_BUTTON_LEFT);
+
+		cameraMovement(dt);
+
+		view = rotate(camHeading, vec3(0, 1, 0)) * translate(-camPos);
 		modelViewProj = proj * view * model;
-		prog.uploadUniform("modelViewProj", modelViewProj);*/
+		prog.uploadUniform("modelViewProj", modelViewProj);
 
 		// draw
-		/*axisTex.bindToUnit(TextureUnit::COLOR);
+		axisTex.bindToUnit(TextureUnit::COLOR);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		prog.use();
 		cube.bind();
-		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);*/
+		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);
 
-		SDL_Delay(5);
 		SDL_GL_SwapWindow(window);
-
 	}
 
 	return 0;
