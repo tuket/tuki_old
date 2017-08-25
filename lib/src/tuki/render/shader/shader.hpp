@@ -154,7 +154,7 @@ public:
 	void uploadUniform(const char* name, const T& value)
 	{
 		int loc = getUniformLocation(name);
-		glUseProgram(program);
+		useProgram();
 		uploadUniform(loc, value);
 	}
 
@@ -166,6 +166,9 @@ protected:
 	FragmentShader fragShad;
 	GeometryShader geomShad;
 	Status status;
+
+private:
+	void useProgram();
 
 };
 

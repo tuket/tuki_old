@@ -9,6 +9,9 @@
 #include <utility>
 #include <stb_image_write.h>
 #include <thread>
+#include <algorithm>
+
+using namespace std;
 
 const unsigned PIXEL_FORMAT_SIZE[(int)PixelFormat::COUNT] =
 {

@@ -174,14 +174,6 @@ SET( Common_SRCS
 )
 SOURCE_GROUP(Common FILES ${Common_SRCS})
 
-IF ( ASSIMP_BUILD_NONFREE_C4D_IMPORTER )
-  SET( C4D_SRCS
-    C4DImporter.cpp
-    C4DImporter.h
-  )
-  SOURCE_GROUP( C4D FILES ${C4D_SRCS})
-ENDIF ( ASSIMP_BUILD_NONFREE_C4D_IMPORTER )
-
 # macro to add the CMake Option ADD_ASSIMP_IMPORTER_<name> which enables compile of loader
 # this way selective loaders can be compiled (reduces filesize + compile time)
 MACRO(ADD_ASSIMP_IMPORTER name)
@@ -449,9 +441,6 @@ ADD_ASSIMP_IMPORTER( IFC
   STEPFileEncoding.cpp
   STEPFileEncoding.h
 )
-if (MSVC AND ASSIMP_BUILD_IFC_IMPORTER)
-  set_source_files_properties(IFCReaderGen.cpp PROPERTIES COMPILE_FLAGS "/bigobj")
-endif (MSVC AND ASSIMP_BUILD_IFC_IMPORTER)
 
 ADD_ASSIMP_IMPORTER( XGL
   XGLLoader.cpp
@@ -701,7 +690,39 @@ SET ( openddl_parser_SRCS
 )
 SOURCE_GROUP( openddl_parser FILES ${openddl_parser_SRCS})
 
-INCLUDE_DIRECTORIES( "../contrib/rapidjson/include" )
+SET ( zlib_SRCS
+  ../contrib/zlib/crc32.h
+  ../contrib/zlib/deflate.h
+  ../contrib/zlib/gzguts.h
+  ../contrib/zlib/inffast.h
+  ../contrib/zlib/inffixed.h
+  ../contrib/zlib/inflate.h
+  ../contrib/zlib/inftrees.h
+  ../contrib/zlib/trees.h
+  ../contrib/zlib/zconf.in.h
+  ../contrib/zlib/zlib.h
+  ../contrib/zlib/zutil.h
+
+  ../contrib/zlib/adler32.c
+  ../contrib/zlib/compress.c
+  ../contrib/zlib/crc32.c
+  ../contrib/zlib/deflate.c
+  ../contrib/zlib/gzclose.c
+  ../contrib/zlib/gzlib.c
+  ../contrib/zlib/gzread.c
+  ../contrib/zlib/gzwrite.c
+  ../contrib/zlib/infback.c
+  ../contrib/zlib/inffast.c
+  ../contrib/zlib/inflate.c
+  ../contrib/zlib/inftrees.c
+  ../contrib/zlib/trees.c
+  ../contrib/zlib/uncompr.c
+  ../contrib/zlib/zutil.c
+)
+SOURCE_GROUP( zlib FILES ${zlib_SRCS})
+  
+
+INCLUDE_DIRECTORIES( "../contrib/rapidjson/include" ../include ../)
 
 # VC2010 fixes
 if(MSVC10)
@@ -757,90 +778,8 @@ ADD_DEFINITIONS( -DOPENDDLPARSER_BUILD )
 
 INCLUDE_DIRECTORIES(
   ../contrib/openddlparser/include
+  ../contrib/zlib
 )
-
-IF (ASSIMP_BUILD_NONFREE_C4D_IMPORTER)
-  SET( assimp_src ${assimp_src} ${C4D_SRCS})
-  INCLUDE_DIRECTORIES(${C4D_INCLUDES})
-ENDIF (ASSIMP_BUILD_NONFREE_C4D_IMPORTER)
 
 ADD_LIBRARY( assimp ${assimp_src} )
 
-TARGET_LINK_LIBRARIES(assimp ${ZLIB_LIBRARIES} ${OPENDDL_PARSER_LIBRARIES} )
-
-if(ANDROID AND ASSIMP_ANDROID_JNIIOSYSTEM)
-  set(ASSIMP_ANDROID_JNIIOSYSTEM_PATH port/AndroidJNI)
-  add_subdirectory(../${ASSIMP_ANDROID_JNIIOSYSTEM_PATH}/ ../${ASSIMP_ANDROID_JNIIOSYSTEM_PATH}/)
-  target_link_libraries(assimp android_jniiosystem)
-endif(ANDROID AND ASSIMP_ANDROID_JNIIOSYSTEM)
-
-IF (ASSIMP_BUILD_NONFREE_C4D_IMPORTER)
-  TARGET_LINK_LIBRARIES(assimp optimized ${C4D_RELEASE_LIBRARIES})
-  TARGET_LINK_LIBRARIES(assimp debug ${C4D_DEBUG_LIBRARIES})
-  TARGET_LINK_LIBRARIES(assimp ${C4D_EXTRA_LIBRARIES})
-ENDIF (ASSIMP_BUILD_NONFREE_C4D_IMPORTER)
-
-if( MSVC )
-  # in order to prevent DLL hell, each of the DLLs have to be suffixed with the major version and msvc prefix
-  if( MSVC70 OR MSVC71 )
-    set(MSVC_PREFIX "vc70")
-  elseif( MSVC80 )
-    set(MSVC_PREFIX "vc80")
-  elseif( MSVC90 )
-    set(MSVC_PREFIX "vc90")
-  elseif( MSVC10 )
-    set(MSVC_PREFIX "vc100")
-  elseif( MSVC11 )
-    set(MSVC_PREFIX "vc110")
-  elseif( MSVC12 )
-    set(MSVC_PREFIX "vc120")
-  elseif( MSVC14 )
-    set(MSVC_PREFIX "vc140")
-  else()
-    set(MSVC_PREFIX "vc150")
-  endif()
-  set(LIBRARY_SUFFIX "${ASSIMP_LIBRARY_SUFFIX}-${MSVC_PREFIX}-mt" CACHE STRING "the suffix for the assimp windows library")
-endif()
-
-SET_TARGET_PROPERTIES( assimp PROPERTIES
-  VERSION ${ASSIMP_VERSION}
-  SOVERSION ${ASSIMP_SOVERSION} # use full version
-  OUTPUT_NAME assimp${LIBRARY_SUFFIX}
-)
-
-if (APPLE)
-  SET_TARGET_PROPERTIES( assimp PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${ASSIMP_LIB_INSTALL_DIR}")
-endif()
-
-# Build against external unzip, or add ../contrib/unzip so
-# assimp can #include "unzip.h"
-if (UNZIP_FOUND)
-  INCLUDE_DIRECTORIES(${UNZIP_INCLUDE_DIRS})
-  TARGET_LINK_LIBRARIES(assimp ${UNZIP_LIBRARIES})
-else (UNZIP_FOUND)
-  INCLUDE_DIRECTORIES("../")
-endif (UNZIP_FOUND)
-
-INSTALL( TARGETS assimp
-  LIBRARY DESTINATION ${ASSIMP_LIB_INSTALL_DIR}
-  ARCHIVE DESTINATION ${ASSIMP_LIB_INSTALL_DIR}
-  RUNTIME DESTINATION ${ASSIMP_BIN_INSTALL_DIR}
-  COMPONENT ${LIBASSIMP_COMPONENT})
-INSTALL( FILES ${PUBLIC_HEADERS} DESTINATION ${ASSIMP_INCLUDE_INSTALL_DIR}/assimp COMPONENT assimp-dev)
-INSTALL( FILES ${COMPILER_HEADERS} DESTINATION ${ASSIMP_INCLUDE_INSTALL_DIR}/assimp/Compiler COMPONENT assimp-dev)
-if (ASSIMP_ANDROID_JNIIOSYSTEM)
-  INSTALL(FILES ${HEADER_PATH}/${ASSIMP_ANDROID_JNIIOSYSTEM_PATH}/AndroidJNIIOSystem.h
-    DESTINATION ${ASSIMP_INCLUDE_INSTALL_DIR}
-    COMPONENT assimp-dev)
-endif(ASSIMP_ANDROID_JNIIOSYSTEM)
-
-if(MSVC AND ASSIMP_INSTALL_PDB)
-  install(FILES ${Assimp_BINARY_DIR}/code/Debug/assimp${LIBRARY_SUFFIX}${CMAKE_DEBUG_POSTFIX}.pdb
-    DESTINATION ${ASSIMP_LIB_INSTALL_DIR}
-    CONFIGURATIONS Debug
-  )
-  install(FILES ${Assimp_BINARY_DIR}/code/RelWithDebInfo/assimp.pdb
-    DESTINATION ${ASSIMP_LIB_INSTALL_DIR}
-    CONFIGURATIONS RelWithDebInfo
-  )
-endif ()

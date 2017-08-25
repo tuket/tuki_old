@@ -1476,14 +1476,6 @@ if(NOT WINDOWS OR CYGWIN)
   # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
   # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
 
-  configure_file("${SDL2_SOURCE_DIR}/sdl2.pc.in"
-    "${SDL2_BINARY_DIR}/sdl2.pc" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config")
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/SDL2.spec.in"
-    "${SDL2_BINARY_DIR}/SDL2.spec" @ONLY)
 endif()
 
 ##### Info output #####

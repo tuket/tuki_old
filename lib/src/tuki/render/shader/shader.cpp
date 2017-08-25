@@ -180,6 +180,11 @@ void ShaderProgram::use()
 	glUseProgram(program);
 }
 
+void ShaderProgram::useProgram()
+{
+	glUseProgram(program);
+}
+
 void ShaderProgram::free()
 {
 	assert(program >= 0 && "Attempted to free an invalid shader program");

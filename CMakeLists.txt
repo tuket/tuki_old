@@ -42,7 +42,8 @@ add_subdirectory("externals/zlib")
 add_subdirectory("externals/pugixml")
 
 # assimp
-option(ASSIMP_BUILD_ASSIMP_TOOLS ON)
+OPTION(ASSIMP_BUILD_ZLIB ON)
+option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
 option(ASSIMP_BUILD_SAMPLES OFF)
 option(ASSIMP_BUILD_TESTS OFF)
 set(ZLIB_LIBRARIES zlibstatic)
