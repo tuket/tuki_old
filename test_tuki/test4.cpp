@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 		);
 
 	SDL_GLContext context = SDL_GL_CreateContext(window);
-	//SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetSwapInterval(1);
 
 	if (!gladLoadGL())
 	{
@@ -127,11 +127,6 @@ int main(int argc, char** argv)
 		float dt = (curTime - prevTime) / 1000.f;
 		prevTime = curTime;
 
-		if (dt > 0.1)
-		{
-			cout << "----------------" << dt << endl;
-		}
-
 		SDL_Event event;
 		if (SDL_PollEvent(&event))
 		{
@@ -175,13 +170,13 @@ int main(int argc, char** argv)
 void cameraMovement(float dt)
 {
 	const float SPEED = 1.f;
-	const float MOUSE_SENSITIVITY = 0.5f;
+	const float MOUSE_SENSITIVITY = 0.01f;
 
 	// rotation with mouse
 	if (mousePressed)
 	{
 		float dx = mouseX - prevMouseX;
-		camHeading += dx * MOUSE_SENSITIVITY * dt;
+		camHeading += dx * MOUSE_SENSITIVITY;
 	}
 
 	// translation with keyboard

@@ -1,13 +1,11 @@
-project(glad)
-
 cmake_minimum_required(VERSION 2.6)
 
-include_directories("include")
+project(glad)
 
-set(SOURCES include/glad/glad.h src/glad.c)
+include_directories(include)
 
-add_library(glad STATIC ${SOURCES})
+add_library(glad STATIC include/glad/glad.h src/glad.c)
 
 if(UNIX)
-	target_link_libraries(glad "m" "dl" "pthread")
+	target_link_libraries(glad m dl pthread)
 endif()

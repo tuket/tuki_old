@@ -35,17 +35,11 @@ add_subdirectory("externals/stb")
 # glad
 add_subdirectory("externals/glad")
 
-# zlib
-add_subdirectory("externals/zlib")
-
 # pugixml
 add_subdirectory("externals/pugixml")
 
 # assimp
 OPTION(ASSIMP_BUILD_ZLIB ON)
-option(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
-option(ASSIMP_BUILD_SAMPLES OFF)
-option(ASSIMP_BUILD_TESTS OFF)
 set(ZLIB_LIBRARIES zlibstatic)
 set(ENABLE_BOOST_WORKAROUND ON)
 option(ASSIMP_BUILD_STATIC_LIB ON)

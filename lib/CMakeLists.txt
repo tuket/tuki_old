@@ -65,7 +65,6 @@ set(LINK_LIBS
 	"pugixml"
 	"stbi"
 	"glad"
-	"zlibstatic"
 	"assimp"
 )
 if(UNIX)
