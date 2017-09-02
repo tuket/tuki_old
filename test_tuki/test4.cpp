@@ -96,6 +96,10 @@ int main(int argc, char** argv)
 		cout << prog.getLinkError() << endl;
 	}
 
+	// render target
+	RenderTarget renderTarget(1, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	// cube
 	Mesh cubeMesh = SimpleMeshes::createBox(0.5, 0.5, 0.5);
 	MeshGpuGeneric cube;
 	cube.load(cubeMesh);
@@ -153,11 +157,25 @@ int main(int argc, char** argv)
 		modelViewProj = proj * view * model;
 		prog.uploadUniform("modelViewProj", modelViewProj);
 
-		// draw
+		// draw cube faces img
+		renderTarget.bind();
 		axisTex.bindToUnit(TextureUnit::COLOR);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 		prog.use();
 		cube.bind();
+		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);
+		
+		static bool doneOnce = false;
+		if (!doneOnce)
+		{
+			renderTarget.getTexture(0).save("img.png");
+			doneOnce = true;
+		}
+
+		// draw scene
+		RenderTarget::bindDefault();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderTarget.getTexture(0).bindToUnit(TextureUnit::COLOR);
 		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);
 
 		SDL_GL_SwapWindow(window);

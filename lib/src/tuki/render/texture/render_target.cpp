@@ -73,6 +73,11 @@ RenderTarget::RenderTarget(
 	resize(width, height);
 }
 
+Texture RenderTarget::getTexture(unsigned slot)const
+{
+	return textures[slot];
+}
+
 TextureId RenderTarget::getTextureId(unsigned slot)const
 {
 	return textures[slot].getId();
@@ -133,4 +138,9 @@ void RenderTarget::resize(unsigned w, unsigned h)
 void RenderTarget::bind()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+}
+
+void RenderTarget::bindDefault()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

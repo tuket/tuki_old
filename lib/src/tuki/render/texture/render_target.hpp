@@ -21,6 +21,7 @@ public:
 		bool depthTex = false
 	);
 
+	Texture getTexture(unsigned slot)const;
 	TextureId getTextureId(unsigned slot)const;
 	TextureId getDepthTextureId()const;
 	unsigned getNumTextures()const;
@@ -41,4 +42,7 @@ private:
 	unsigned fbo;
 
 	unsigned width, height;
+
+public:
+	static void bindDefault();
 };
