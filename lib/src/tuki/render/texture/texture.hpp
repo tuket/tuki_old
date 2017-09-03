@@ -91,7 +91,8 @@ class Texture
 {
 public:
 
-	Texture() : id(-1), width(-1), height(-1), mipmapLevels(0) {}
+	Texture() : id(-1), width(-1), height(-1), mipmapLevels(0),
+				filterMode(TextureFilterMode::NEAREST) {}
 
 	TextureId getId()const { return id; }
 	void bindToUnit(unsigned unit)const;
@@ -100,7 +101,6 @@ public:
 	TexelFormat getTexelFormat()const { return texelFormat; }
 	unsigned getNumChannels()const;
 
-	TextureWrapMode getWrapMode()const { return wrapMode; }
 	void setWrapMode(TextureWrapMode wrapMode) { setWrapModeUv(wrapMode, wrapMode); }
 	void setWrapModeUv(TextureWrapMode wrapMode) { setWrapModeUv(wrapMode, wrapMode); }
 	void setWrapModeUv(TextureWrapMode wrapModeU, TextureWrapMode wrapModeV);
@@ -128,7 +128,6 @@ private:
 	TextureId id;
 	int width, height;
 	TexelFormat texelFormat;
-	TextureWrapMode wrapMode;
 	TextureFilterMode filterMode;
 	unsigned mipmapLevels;
 

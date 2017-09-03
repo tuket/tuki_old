@@ -10,6 +10,9 @@
 #include <stb_image_write.h>
 #include <thread>
 #include <algorithm>
+#include <glm/gtc/integer.hpp>
+#include <cassert>
+#include "../util.hpp"
 
 using namespace std;
 
@@ -53,6 +56,31 @@ const GLuint TO_GL_TEXEL_FORMAT[(int)TexelFormat::COUNT] =
 	GL_DEPTH_COMPONENT32,
 	GL_DEPTH_COMPONENT,
 	GL_DEPTH24_STENCIL8
+};
+
+// this 2 lookup tables are used to quickly get a valid pixel format
+// for creating empty textures. It seems that, eventhough pixel format
+// should not be necessary to create empty textures, OpenGL triggers an error
+// it the specified texel format is not appropiate
+const GLuint TEXEL_TO_GL_PIXEL_FORMAT[(int)TexelFormat::COUNT] =
+{
+	GL_RGB,
+	GL_RGBA,
+	GL_DEPTH_COMPONENT,
+	GL_DEPTH_COMPONENT,
+	GL_DEPTH_COMPONENT,
+	GL_DEPTH_COMPONENT,
+	GL_DEPTH_STENCIL,
+};
+const GLuint TEXEL_TO_GL_PIXEL_SIZE[(int)TexelFormat::COUNT] =
+{
+	GL_UNSIGNED_BYTE,
+	GL_UNSIGNED_BYTE,
+	GL_UNSIGNED_BYTE,
+	GL_UNSIGNED_BYTE,
+	GL_UNSIGNED_BYTE,
+	GL_UNSIGNED_BYTE,
+	GL_UNSIGNED_BYTE,
 };
 
 const TexelFormat TO_DEFAULT_TEXEL_FORMAT[(int)PixelFormat::COUNT] =
@@ -227,7 +255,7 @@ void Texture::resetFilterMode()
 
 void Texture::generateMipmaps()
 {
-	mipmapLevels = 1 + floor(log2(max(width, height)));
+	mipmapLevels = 1 + glm::log2(max(width, height));
 	glBindTexture(GL_TEXTURE_2D, id);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	resetFilterMode();
@@ -236,6 +264,8 @@ void Texture::generateMipmaps()
 void Texture::resize(unsigned width, unsigned height)
 {
 	glBindTexture(GL_TEXTURE_2D, id);
+
+	resetFilterMode();
 
 	glTexImage2D(GL_TEXTURE_2D, 0, TO_GL_TEXEL_FORMAT[(int)texelFormat],
 		width, height, 0,
@@ -285,16 +315,21 @@ Texture Texture::createEmpty(unsigned width, unsigned height, TexelFormat texelF
 	Texture texture;
 	glGenTextures(1, (GLuint*)&texture.id);
 	glBindTexture(GL_TEXTURE_2D, texture.id);
-	glTexImage2D(GL_TEXTURE_2D, 0, TO_GL_TEXEL_FORMAT[(int)texelFormat],
-		width, height, 0,
-		0, 0,
-		(void*)0
-	);
+	
 	texture.texelFormat = texelFormat;
 	texture.width = width;
 	texture.height = height;
 	texture.setWrapMode(TextureWrapMode::REPEAT);
 	texture.setFilterMode(TextureFilterMode::NEAREST);
+	texture.resetFilterMode();
+
+	glTexImage2D(GL_TEXTURE_2D, 0, TO_GL_TEXEL_FORMAT[(int)texelFormat],
+		width, height, 0,
+		TEXEL_TO_GL_PIXEL_FORMAT[(int)texelFormat], // not used but has to be correct
+		TEXEL_TO_GL_PIXEL_SIZE[(int)texelFormat],	// not used but has to be correct
+		(void*)0
+	);
+	assert(!checkGlErrors());
 	return texture;
 }
 

@@ -35,6 +35,10 @@ set(SRC_RENDER_TEXTURE
 	"render_target.hpp" "render_target.cpp"
 )
 
+set(SRC_RENDER_UTIL
+	"util.hpp" "util.cpp"
+)
+
 set(SRC_UTIL
 	"util.hpp" "util.cpp"
 )
@@ -47,6 +51,7 @@ PREPEND(SRC_RENDER_MESH "src/tuki/render/mesh" ${SRC_RENDER_MESH})
 PREPEND(SRC_RENDER_SHADER "src/tuki/render/shader" ${SRC_RENDER_SHADER})
 PREPEND(SRC_RENDER_MATERIAL "src/tuki/render/material" ${SRC_RENDER_MATERIAL})
 PREPEND(SRC_RENDER_TEXTURE "src/tuki/render/texture" ${SRC_RENDER_TEXTURE})
+PREPEND(SRC_RENDER_UTIL "src/tuki/render" ${SRC_RENDER_UTIL})
 PREPEND(SRC_UTIL "src/tuki/util" ${SRC_UTIL})
 
 add_library(${PROJ_NAME}
@@ -54,6 +59,7 @@ add_library(${PROJ_NAME}
 	${SRC_RENDER_SHADER}
 	${SRC_RENDER_MATERIAL}
 	${SRC_RENDER_TEXTURE}
+	${SRC_RENDER_UTIL}
 	${SRC_UTIL}
 )
 
@@ -88,6 +94,7 @@ source_group("render\\mesh" FILES ${SRC_RENDER_MESH})
 source_group("render\\shader" FILES ${SRC_RENDER_SHADER})
 source_group("render\\material" FILES ${SRC_RENDER_MATERIAL})
 source_group("render\\texture" FILES ${SRC_RENDER_TEXTURE})
+source_group("render" FILES ${SRC_RENDER_UTIL})
 source_group("util" FILES ${SRC_UTIL})
 
 # ----------------------------------------------------

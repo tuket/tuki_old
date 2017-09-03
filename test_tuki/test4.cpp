@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 	// make the window
 	window =
 		SDL_CreateWindow(
-			"tracer",
+			"test4",
 			100, 100,
 			SCREEN_WIDTH, SCREEN_HEIGHT,
 			SDL_WINDOW_OPENGL
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 	}
 
 	// render target
-	RenderTarget renderTarget(1, SCREEN_WIDTH, SCREEN_HEIGHT);
+	RenderTarget renderTarget(1, SCREEN_WIDTH, SCREEN_HEIGHT, TexelFormat::RGBA8, true);
 
 	// cube
 	Mesh cubeMesh = SimpleMeshes::createBox(0.5, 0.5, 0.5);
@@ -160,7 +160,7 @@ int main(int argc, char** argv)
 		// draw cube faces img
 		renderTarget.bind();
 		axisTex.bindToUnit(TextureUnit::COLOR);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		prog.use();
 		cube.bind();
 		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);

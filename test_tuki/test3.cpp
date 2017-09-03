@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 	// make the window
 	window =
 		SDL_CreateWindow(
-			"tracer",
+			"test3",
 			100, 100,
 			SCREEN_WIDTH, SCREEN_HEIGHT,
 			SDL_WINDOW_OPENGL

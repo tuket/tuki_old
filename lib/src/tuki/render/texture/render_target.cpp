@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <cassert>
 #include "tuki/util/util.hpp"
+#include "../util.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -27,11 +29,13 @@ RenderTarget::RenderTarget(
 	for (unsigned i = 0; i < numTextures; i++)
 	{
 		textures[i] = Texture::createEmpty(width, height, texelFormat);
+		textures[i].setWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
 	}
 
 	if (depthTex)
 	{
 		depthTexture = Texture::createEmpty(width, height, TexelFormat::DEPTH_AUTO);
+		depthTexture.setWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
 	}
 
 	glGenFramebuffers(1, &fbo);
@@ -55,21 +59,23 @@ RenderTarget::RenderTarget(
 	assert(numTextures <= MAX_NUM_TEXTURES);
 
 	texelFormats.resize(numTextures);
-	for (int i = 0; i < numTextures; i++) texelFormats[i] = texForms[i];
+	for (unsigned i = 0; i < numTextures; i++) texelFormats[i] = texForms[i];
 
 	textures.resize(numTextures);
 	for (unsigned i = 0; i < numTextures; i++)
 	{
 		textures[i] = Texture::createEmpty(width, height, texelFormats[i]);
+		//textures[i].setWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
 	}
 
 	if (depthTex)
 	{
 		depthTexture = Texture::createEmpty(width, height, TexelFormat::DEPTH_AUTO);
+		//depthTexture.setWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
 	}
 
 	glGenFramebuffers(1, &fbo);
-
+	assert(!checkGlErrors());
 	resize(width, height);
 }
 
@@ -90,14 +96,14 @@ TextureId RenderTarget::getDepthTextureId()const
 
 unsigned RenderTarget::getNumTextures()const
 {
-	return textures.size();
+	return (unsigned)textures.size();
 }
 
 void RenderTarget::resize(unsigned w, unsigned h)
 {
 	width = w;
 	height = h;
-
+	
 	const unsigned nt = getNumTextures();
 
 	// reserve space in textures
@@ -128,8 +134,9 @@ void RenderTarget::resize(unsigned w, unsigned h)
 		getNumberSequenceArray<0, MAX_NUM_TEXTURES>();
 	static const GLenum* drawBuffs = (const GLenum*)&attachMap[0];
 
-	glDrawBuffers(getNumTextures(), drawBuffs);
+	//glDrawBuffers(getNumTextures(), drawBuffs);
 
+	GLenum be = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
