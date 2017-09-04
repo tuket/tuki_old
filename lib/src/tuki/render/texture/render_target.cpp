@@ -131,10 +131,10 @@ void RenderTarget::resize(unsigned w, unsigned h)
 
 	// texture unit 0 -> color attachment 0, texture unit 1 -> color attachment 1, etc
 	static const std::array<int, MAX_NUM_TEXTURES> attachMap =
-		getNumberSequenceArray<0, MAX_NUM_TEXTURES>();
+		getNumberSequenceArray<GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT0 + MAX_NUM_TEXTURES>();
 	static const GLenum* drawBuffs = (const GLenum*)&attachMap[0];
 
-	//glDrawBuffers(getNumTextures(), drawBuffs);
+	glDrawBuffers(getNumTextures(), drawBuffs);
 
 	GLenum be = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));

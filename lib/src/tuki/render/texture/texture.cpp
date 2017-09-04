@@ -279,13 +279,16 @@ void Texture::resize(unsigned width, unsigned height)
 
 void Texture::save(const char* fileName, bool async, bool transparency)
 {
+	// create an empty image
 	PixelFormat pixFormat = transparency ? PixelFormat::RGBA8 : PixelFormat::RGB8;
 	Image image = Image::createEmpty(width, height, pixFormat);
 	unsigned nc = PIXEL_NUM_CHANNELS[(int)pixFormat];
 
+	// copy the texture to the image
 	glBindTexture(GL_TEXTURE_2D, id);
 	glGetTexImage(GL_TEXTURE_2D, 0, TO_GL_PIXEL_FORMAT[(int)pixFormat], GL_UNSIGNED_BYTE, image.getData());
 
+	// we have to flip y because OpenGL has the Y axis inverted
 	image.flipY();
 
 	auto saveToDisk =
