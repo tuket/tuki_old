@@ -9,7 +9,9 @@ enum class GeomType
 	TRIANGLES,
 	LINES_STRIP,
 	TRIANGLE_STRIP,
-	TRIANGLE_FAN
+	TRIANGLE_FAN,
+
+	COUNT
 };
 
 enum class AttribLocation
@@ -153,7 +155,10 @@ public:
 	virtual AttribBitMask getAttribBitMask()const = 0;
 	virtual AttribInitilizer getAttribInitializer()const { return AttribInitilizers::generic; }
 
+	virtual unsigned getNumElements()const = 0;
+
 	void bind()const;
+	void draw()const;
 
 	// upload mesh from RAM to VRAM
 	virtual void load(const IMesh& mesh) {};
@@ -174,12 +179,15 @@ public:
 	GeomType getGeomType()const { return GeomType::TRIANGLES; }
 	AttribBitMask getAttribBitMask()const { return attribBitMask; }
 
+	unsigned getNumElements()const;
+
 	void load(const IMesh& mesh);
 	void free();
 
 protected:
 	VboSetFull vboSet;
 	AttribBitMask attribBitMask;
+	unsigned numElements;
 };
 
 class UvPlaneMeshGpu : public IMeshGpu
@@ -188,6 +196,8 @@ public:
 	bool hasIndices()const { return false; }
 	GeomType getGeomType()const { return GeomType::TRIANGLE_STRIP; }
 	AttribBitMask getAttribBitMask()const { return AttribBitMask::TEX_COORD; }
+
+	unsigned getNumElements()const { return 4; }
 
 	void load();
 	void free();

@@ -162,8 +162,7 @@ int main(int argc, char** argv)
 		axisTex.bindToUnit(TextureUnit::COLOR);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		prog.use();
-		cube.bind();
-		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);
+		cube.draw();
 		
 		static bool doneOnce = false;
 		if (!doneOnce)
@@ -176,7 +175,7 @@ int main(int argc, char** argv)
 		RenderTarget::bindDefault();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderTarget.getTexture(0).bindToUnit(TextureUnit::COLOR);
-		glDrawElements(GL_TRIANGLES, cubeMesh.getNumIndices(), GL_UNSIGNED_INT, (void*)0);
+		cube.draw();
 
 		SDL_GL_SwapWindow(window);
 	}
