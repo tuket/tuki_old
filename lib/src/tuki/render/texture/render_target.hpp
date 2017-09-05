@@ -25,12 +25,16 @@ public:
 	TextureId getTextureId(unsigned slot)const;
 	TextureId getDepthTextureId()const;
 	unsigned getNumTextures()const;
+	bool hasDepthTexture()const { return depthTexture.getId() >= 0; }
 
 	void resize(unsigned width, unsigned height);
 
 	void bind();
+	
+	void clear();
 
 	unsigned getWidth()const { return width; }
+	unsigned getHeight()const { return height; }
 
 	static const unsigned MAX_NUM_TEXTURES = 16;
 
@@ -45,4 +49,5 @@ private:
 
 public:
 	static void bindDefault();
+	static void clearDefault();
 };

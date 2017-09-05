@@ -158,7 +158,6 @@ public:
 	virtual unsigned getNumElements()const = 0;
 
 	void bind()const;
-	void draw()const;
 
 	// upload mesh from RAM to VRAM
 	virtual void load(const IMesh& mesh) {};

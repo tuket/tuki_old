@@ -18,16 +18,6 @@ const char* ATTRIB_NAMES[(int)AttribLocation::NUM_ATTRIBS] =
 	"attribTexCoord3"
 };
 
-GLenum TO_GL_GEOM_TYPE[(int)GeomType::COUNT] = 
-{
-	GL_POINTS,
-	GL_LINES,
-	GL_TRIANGLES,
-	GL_LINE_STRIP,
-	GL_TRIANGLE_STRIP,
-	GL_TRIANGLE_FAN,
-};
-
 // upload vertex attrib data and set the pointer
 inline void setVertexAttrib(
 	int attribLocation, Vbo vbo, unsigned numVerts, unsigned numDims, const void* data)
@@ -56,30 +46,6 @@ inline void setVertexIndices(Vbo vbo, unsigned numInds, const void* data)
 void IMeshGpu::bind()const
 {
 	glBindVertexArray(vao);
-}
-
-void IMeshGpu::draw()const
-{
-	bind();
-	if (hasIndices())
-	{
-		glDrawElements
-		(
-			TO_GL_GEOM_TYPE[(int)getGeomType()],
-			getNumElements(),
-			GL_UNSIGNED_INT,
-			0
-		);
-	}
-	else
-	{
-		glDrawArrays
-		(
-			TO_GL_GEOM_TYPE[(int)getGeomType()],
-			0,
-			getNumElements()
-		);
-	}
 }
 
 unsigned MeshGpuGeneric::getNumElements()const

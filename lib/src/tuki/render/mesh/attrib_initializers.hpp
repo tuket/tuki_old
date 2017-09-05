@@ -15,6 +15,6 @@ typedef std::function<void(ShaderProgram& prog)> AttribInitilizer;
 
 namespace AttribInitilizers
 {
-	extern AttribInitilizer generic;
-	extern AttribInitilizer uv;
+	const extern AttribInitilizer generic;
+	const extern AttribInitilizer uv;
 }

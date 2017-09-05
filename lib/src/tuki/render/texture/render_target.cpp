@@ -147,7 +147,23 @@ void RenderTarget::bind()
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 }
 
+void RenderTarget::clear()
+{
+	glClear(
+		GL_COLOR_BUFFER_BIT |
+		(GL_DEPTH_BUFFER_BIT * hasDepthTexture())
+	);
+}
+
 void RenderTarget::bindDefault()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderTarget::clearDefault()
+{
+	glClear(
+		GL_COLOR_BUFFER_BIT |
+		GL_DEPTH_BUFFER_BIT
+	);
 }

@@ -5,7 +5,7 @@
 
 namespace AttribInitilizers
 {
-	AttribInitilizer generic =
+	const AttribInitilizer generic =
 		[](ShaderProgram& prog)
 	{
 		const int n = (int)AttribLocation::NUM_ATTRIBS;
@@ -15,7 +15,7 @@ namespace AttribInitilizers
 		}
 	};
 
-	AttribInitilizer uv =
+	const AttribInitilizer uv =
 		[](ShaderProgram& prog)
 	{
 		unsigned loc = (unsigned)AttribLocation::TEX_COORD;

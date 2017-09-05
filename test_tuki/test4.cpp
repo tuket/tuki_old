@@ -2,13 +2,10 @@
 #include <pugixml.hpp>
 #include <SDL.h>
 #include <glad/glad.h>
-#include <tuki/render/shader/shader.hpp>
-#include <tuki/render/mesh/simple_meshes.hpp>
-#include <tuki/render/mesh/attrib_initializers.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/norm.hpp>
-#include <tuki/render/texture/texture.hpp>
-#include <tuki/render/texture/render_target.hpp>
+#include <tuki/render/render.hpp>
+#include <tuki/render/mesh/simple_meshes.hpp>
 
 using namespace std;
 using namespace glm;
@@ -160,9 +157,10 @@ int main(int argc, char** argv)
 		// draw cube faces img
 		renderTarget.bind();
 		axisTex.bindToUnit(TextureUnit::COLOR);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderTarget.clear();
 		prog.use();
-		cube.draw();
+		cube.bind();
+		Render::draw(cube);
 		
 		static bool doneOnce = false;
 		if (!doneOnce)
@@ -173,9 +171,10 @@ int main(int argc, char** argv)
 
 		// draw scene
 		RenderTarget::bindDefault();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		RenderTarget::clearDefault();
 		renderTarget.getTexture(0).bindToUnit(TextureUnit::COLOR);
-		cube.draw();
+		cube.bind();
+		Render::draw(cube);
 
 		SDL_GL_SwapWindow(window);
 	}
