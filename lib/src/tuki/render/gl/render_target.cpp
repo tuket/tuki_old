@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <cassert>
 #include "tuki/util/util.hpp"
-#include "../util.hpp"
+#include "util.hpp"
 #include <iostream>
 
 using namespace std;

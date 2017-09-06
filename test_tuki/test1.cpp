@@ -2,9 +2,7 @@
 #include <pugixml.hpp>
 #include <SDL.h>
 #include <glad/glad.h>
-#include <tuki/render/shader/shader.hpp>
-#include <tuki/render/mesh/simple_meshes.hpp>
-#include <tuki/render/mesh/attrib_initializers.hpp>
+#include <tuki/render/gl/render.hpp>
 
 using namespace std;
 

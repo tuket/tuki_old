@@ -2,6 +2,9 @@
 
 #include <glad/glad.h>
 
+#include "../mesh/mesh.hpp"
+#include "mesh_gpu.hpp"
+
 const GLenum TO_GL_GEOM_TYPE[(int)GeomType::COUNT] =
 {
 	GL_POINTS,
@@ -11,6 +14,9 @@ const GLenum TO_GL_GEOM_TYPE[(int)GeomType::COUNT] =
 	GL_TRIANGLE_STRIP,
 	GL_TRIANGLE_FAN,
 };
+
+namespace Render
+{
 
 void draw(const IMeshGpu& mesh)
 {
@@ -36,3 +42,6 @@ void draw(const IMeshGpu& mesh)
 		);
 	}
 }
+
+}
+

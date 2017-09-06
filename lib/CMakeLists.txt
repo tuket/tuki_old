@@ -16,31 +16,24 @@ ENDFUNCTION(PREPEND)
 # SOURCE FILES LIST
 # ----------------------------------------------------
 
-set(SRC_RENDER_MESH
-	"mesh.hpp" "mesh.cpp"
-	"simple_meshes.hpp" "simple_meshes.cpp"
+set(SRC_RENDER_GL
+	"mesh_gpu.hpp" "mesh_gpu.cpp"
+	"attribs.hpp" "attribs.cpp"
 	"attrib_initializers.hpp" "attrib_initializers.cpp"
-)
-
-set(SRC_RENDER_SHADER
 	"shader.hpp" "shader.cpp"
+	"texture.hpp" "texture.cpp"
+	"render_target.hpp" "render_target.cpp"
+	"util.hpp" "util.cpp"
+	"render.hpp" "render.cpp"
 )
 
 set(SRC_RENDER_MATERIAL
 	"material.hpp" "material.cpp"
 )
 
-set(SRC_RENDER_TEXTURE
-	"texture.hpp" "texture.cpp"
-	"render_target.hpp" "render_target.cpp"
-)
-
-set(SRC_RENDER_UTIL
-	"util.hpp" "util.cpp"
-)
-
-set(SRC_RENDER
-	"render.hpp" "render.cpp"
+set(SRC_RENDER_MESH
+	"mesh.hpp" "mesh.cpp"
+	"simple_meshes.hpp" "simple_meshes.cpp"
 )
 
 set(SRC_UTIL
@@ -51,21 +44,15 @@ set(SRC_UTIL
 # ADD _LIBRARY
 # ----------------------------------------------------
 
-PREPEND(SRC_RENDER_MESH "src/tuki/render/mesh" ${SRC_RENDER_MESH})
-PREPEND(SRC_RENDER_SHADER "src/tuki/render/shader" ${SRC_RENDER_SHADER})
+PREPEND(SRC_RENDER_GL "src/tuki/render/gl" ${SRC_RENDER_GL})
 PREPEND(SRC_RENDER_MATERIAL "src/tuki/render/material" ${SRC_RENDER_MATERIAL})
-PREPEND(SRC_RENDER_TEXTURE "src/tuki/render/texture" ${SRC_RENDER_TEXTURE})
-PREPEND(SRC_RENDER_UTIL "src/tuki/render" ${SRC_RENDER_UTIL})
-PREPEND(SRC_RENDER "src/tuki/render" ${SRC_RENDER})
+PREPEND(SRC_RENDER_MESH "src/tuki/render/mesh" ${SRC_RENDER_MESH})
 PREPEND(SRC_UTIL "src/tuki/util" ${SRC_UTIL})
 
 add_library(${PROJ_NAME}
-	${SRC_RENDER_MESH}
-	${SRC_RENDER_SHADER}
+	${SRC_RENDER_GL}
 	${SRC_RENDER_MATERIAL}
-	${SRC_RENDER_TEXTURE}
-	${SRC_RENDER_UTIL}
-	${SRC_RENDER}
+	${SRC_RENDER_MESH}
 	${SRC_UTIL}
 )
 
@@ -96,11 +83,9 @@ target_include_directories(${PROJ_NAME} PUBLIC
 # Source groups
 # ----------------------------------------------------
 
-source_group("render\\mesh" FILES ${SRC_RENDER_MESH})
-source_group("render\\shader" FILES ${SRC_RENDER_SHADER})
+source_group("render\\gl" FILES ${SRC_RENDER_GL})
 source_group("render\\material" FILES ${SRC_RENDER_MATERIAL})
-source_group("render\\texture" FILES ${SRC_RENDER_TEXTURE})
-source_group("render" FILES ${SRC_RENDER_UTIL} ${SRC_RENDER})
+source_group("render\\mesh" FILES ${SRC_RENDER_MESH})
 source_group("util" FILES ${SRC_UTIL})
 
 # ----------------------------------------------------

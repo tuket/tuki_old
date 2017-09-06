@@ -1,7 +1,7 @@
 #include "attrib_initializers.hpp"
 
-#include "../shader/shader.hpp"
-#include "mesh.hpp"
+#include "shader.hpp"
+#include "attribs.hpp"
 
 namespace AttribInitilizers
 {

@@ -2,6 +2,8 @@
 
 #include "mesh.hpp"
 
+#include "../gl/mesh_gpu.hpp"
+
 namespace SimpleMeshes
 {
 

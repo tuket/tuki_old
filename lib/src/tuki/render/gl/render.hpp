@@ -1,10 +1,10 @@
 #pragma once
 
-#include "mesh/attrib_initializers.hpp"
-#include "mesh/mesh.hpp"
-#include "texture/render_target.hpp"
-#include "texture/texture.hpp"
-#include "shader/shader.hpp"
+#include "attrib_initializers.hpp"
+#include "mesh_gpu.hpp"
+#include "render_target.hpp"
+#include "texture.hpp"
+#include "shader.hpp"
 
 namespace Render
 {

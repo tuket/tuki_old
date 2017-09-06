@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/norm.hpp>
-#include <tuki/render/render.hpp>
+#include <tuki/render/gl/render.hpp>
 #include <tuki/render/mesh/simple_meshes.hpp>
 
 using namespace std;

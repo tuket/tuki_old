@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <glm/gtc/integer.hpp>
 #include <cassert>
-#include "../util.hpp"
+#include "util.hpp"
 
 using namespace std;
 
