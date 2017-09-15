@@ -1,7 +1,6 @@
 #include <iostream>
 #include <pugixml.hpp>
 #include <SDL.h>
-#include <glad/glad.h>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/norm.hpp>
 #include <tuki/render/gl/render.hpp>
@@ -36,37 +35,15 @@ int main(int argc, char** argv)
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	// don't allow deprecated GL functions
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	window = RenderApi::createWindowWithContext(
+		"test4",
+		100, 100,
+		SCREEN_WIDTH, SCREEN_HEIGHT
+	);
 
-	// make the window
-	window =
-		SDL_CreateWindow(
-			"test4",
-			100, 100,
-			SCREEN_WIDTH, SCREEN_HEIGHT,
-			SDL_WINDOW_OPENGL
-		);
-
-	SDL_GLContext context = SDL_GL_CreateContext(window);
-	SDL_GL_SetSwapInterval(1);
-
-	if (!gladLoadGL())
-	{
-		cout << "gladLoadGL failed" << endl;
-	}
-
-	const GLubyte *oglVersion = glGetString(GL_VERSION);
-	std::cout << "This system supports OpenGL Version: " << oglVersion << std::endl;
-	const GLubyte *gpuVendor = glGetString(GL_VENDOR);
-	std::cout << "Graphics card: " << gpuVendor << std::endl;
-
-	glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-
+	RenderApi::setClearColor(0.15f, 0.15f, 0.15f, 1.0f);
+	RenderApi::enableDepthTest(true);
+	RenderApi::enableFaceCulling(true);
 
 	VertexShader vertShad;
 	vertShad.loadFromFile("shaders/test4.vs");
@@ -160,7 +137,7 @@ int main(int argc, char** argv)
 		renderTarget.clear();
 		prog.use();
 		cube.bind();
-		Render::draw(cube);
+		RenderApi::draw(cube);
 		
 		static bool doneOnce = false;
 		if (!doneOnce)
@@ -174,9 +151,9 @@ int main(int argc, char** argv)
 		RenderTarget::clearDefault();
 		renderTarget.getTexture(0).bindToUnit(TextureUnit::COLOR);
 		cube.bind();
-		Render::draw(cube);
+		RenderApi::draw(cube);
 
-		SDL_GL_SwapWindow(window);
+		RenderApi::swap(window);
 	}
 
 	return 0;

@@ -7,19 +7,26 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-enum class UnifType
-{
-	FLOAT, VEC2, VEC3, VEC4,
-	INT, INT2, INT3, INT4,
-	UINT, UINT2, UINT3, UINT4,
-	TEXTURE,
-	COUNT
-};
+#include "../gl/shader.hpp"
+
+class MaterialManager;
 
 class MaterialTemplate
 {
+public:
+
+	friend class MaterialManager;
+
+	MaterialTemplate() {}
+
+	const char* getName()const;
 
 private:
+	MaterialManager* manager;
+
+	MaterialTemplate(int id, int shaderProgram);
+
+	int id;
 	int shaderProgram;
 
 	// the name of the attribute in the shader ->
@@ -30,29 +37,8 @@ private:
 	// uniform types
 	std::vector<UnifType> unifType;
 
-	// DATA
-	// number of attributes for each type
-	std::vector<int> typeToNumEntries;
-	// entry to the chunck of data
-	std::vector<int> idEntryToDataEntry;
-
-
-private:
-
-	UnifType getUnifType(float) const { return UnifType::FLOAT; }
-	UnifType getUnifType(glm::vec2) const { return UnifType::VEC2; }
-	UnifType getUnifType(glm::vec3) const { return UnifType::VEC3; }
-	UnifType getUnifType(glm::vec4) const { return UnifType::VEC4; }
-	UnifType getUnifType(int) const { return UnifType::INT; }
-	UnifType getUnifType(glm::ivec2) const { return UnifType::INT2; }
-	UnifType getUnifType(glm::ivec3) const { return UnifType::INT3; }
-	UnifType getUnifType(glm::ivec4) const { return UnifType::INT4; }
-	UnifType getUnifType(unsigned) const { return UnifType::UINT; }
-	UnifType getUnifType(glm::uvec2) const { return UnifType::UINT2; }
-	UnifType getUnifType(glm::uvec3) const { return UnifType::UINT3; }
-	UnifType getUnifType(glm::uvec4) const { return UnifType::UINT4; }
-	///UnifType getUnifType(TextureId )
-
+	// array of the fist byte offset for each unif
+	std::vector<int> idEntryToDataByte;
 };
 
 class Material
@@ -61,17 +47,37 @@ public:
 
 	Material() {}
 
-	void setUniform();
+	Material(const MaterialTemplate& materialTemplate);
+
+	void setValue(unsigned entry, float value);
+	void setValue(unsigned entry, const glm::vec2& value);
+	void setValue(unsigned entry, const glm::vec3& value);
+	void setValue(unsigned entry, const glm::vec4& value);
+	void setValue(unsigned entry, int value);
+	void setValue(unsigned entry, const glm::ivec2& value);
+	void setValue(unsigned entry, const glm::ivec3& value);
+	void setValue(unsigned entry, const glm::ivec4& value);
+	void setValue(unsigned entry, const glm::mat2x3& value);
+	void setValue(unsigned entry, const glm::mat3x2& value);
+	void setValue(unsigned entry, const glm::mat2x4& value);
+	void setValue(unsigned entry, const glm::mat4x2& value);
+	void setValue(unsigned entry, const glm::mat3x4& value);
+	void setValue(unsigned entry, const glm::mat4x3& value);
+	void setValue(unsigned entry, const char* textureName);
 
 private:
-	int shaderProgramId;
+	int materialTemplateId;
 
 	// one contiguous memory chunck for storing all uniform data
-	std::vector<int> data;
+	char* data;
 
-private:
-	
+};
 
+// manages the materials and material templates, avoids duplicates
+class MaterialManager
+{
+public:
+	MaterialManager() {}
 
 
 };
