@@ -22,13 +22,17 @@ enum class UnifType
 	FLOAT, VEC2, VEC3, VEC4,
 	INT, INT2, INT3, INT4,
 	UINT, UINT2, UINT3, UINT4,
-	TEXTURE = INT,
 	MATRIX_2, MATRIX_3, MATRIX_4,
 	MATRIX_2x3, MATRIX_3x2,
 	MATRIX_2x4, MATRIX_4x2,
 	MATRIX_3x4, MATRIX_4x3,
-	COUNT
+
+	COUNT,
+
+	TEXTURE = INT,
 };
+
+unsigned getUnifSize(UnifType ut);
 
 // SHADER
 class Shader

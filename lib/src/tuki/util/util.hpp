@@ -15,4 +15,3 @@ std::array<int, end - start> getNumberSequenceArray()
 }
 
 std::string loadStringFromFile(const char *fileName);
-

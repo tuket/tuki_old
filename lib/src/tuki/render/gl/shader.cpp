@@ -6,10 +6,25 @@
 #include <cassert>
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
-#include "../texture/texture.hpp"
+#include "texture.hpp"
 
 using namespace std;
 using namespace glm;
+
+unsigned getUnifSize(UnifType ut)
+{
+	const unsigned lookUpTable[(unsigned)UnifType::COUNT] =
+	{
+		1 * sizeof(float), 2 * sizeof(float), 3 * sizeof(float), 4 * sizeof(float),
+		1 * sizeof(int), 2 * sizeof(int), 3 * sizeof(int), 4 * sizeof(int),
+		1 * sizeof(unsigned), 2 * sizeof(unsigned), 3 * sizeof(unsigned), 4 * sizeof(unsigned),
+		2*2 * sizeof(float), 3*3 * sizeof(float), 4*4 * sizeof(float),
+		2*3 * sizeof(float), 3*2 * sizeof(float),
+		2*4 * sizeof(float), 4*2 * sizeof(float),
+		3*4 * sizeof(float), 4*3 * sizeof(float),
+	};
+	return lookUpTable[(unsigned)ut];
+}
 
 // SHADER
 

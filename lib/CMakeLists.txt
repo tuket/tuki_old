@@ -38,6 +38,7 @@ set(SRC_RENDER_MESH
 
 set(SRC_UTIL
 	"util.hpp" "util.cpp"
+	"singleton.hpp"
 )
 
 # ----------------------------------------------------
