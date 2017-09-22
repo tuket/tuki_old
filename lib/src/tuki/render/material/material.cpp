@@ -1,6 +1,11 @@
 #include "material.hpp"
 
+#include "rapidjson/document.h"
+#include "../../util/util.hpp"
+#include <exception>
+
 using namespace std;
+using namespace rapidjson;
 
 // MATERIAL TEMPLATE
 
@@ -25,7 +30,31 @@ Material::Material(MaterialTemplate materialTemplate)
 
 // MATERIAL MANAGER
 
+MaterialTemplate MaterialManager::loadMaterialTemplate(const char* fileName)
+{
+	string txt = loadStringFromFile(fileName);
+	Document doc;
+	doc.Parse(txt.c_str());
+	MaterialTemplate res = loadMaterialTemplate(doc);
+	return res;
+}
 
+MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
+{
+	Value::MemberIterator shadersIt = doc.FindMember("shaders");
+	if (shadersIt == doc.MemberEnd()) throw runtime_error("missing 'shaders' member");
+	Value::MemberIterator slotsIt = doc.FindMember("slots");
+	if (slotsIt == doc.MemberEnd()) throw runtime_error("missing 'slots' member");
+
+	Value::MemberIterator vertIt = shadersIt->value.FindMember("vert");
+	if (vertIt == shadersIt->value.MemberEnd) throw runtime_error("shaders/vert is mandatory");
+	Value::MemberIterator fragIt = shadersIt->value.FindMember("frag");
+	if (fragIt == shadersIt->value.MemberEnd) throw runtime_error("sahders/frag is mandatory");
+	Value::MemberIterator geomIt = shadersIt->value.FindMember("geom");
+	// geometry sahders are optional
+
+
+}
 
 void MaterialManager::makeUnique(Material& material)
 {

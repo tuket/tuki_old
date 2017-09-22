@@ -49,6 +49,7 @@ set(INCLUDE_DIRS
 	"externals/stb"
 	"externals/glad/include"
 	"externals/assimp/include"
+	"externals/rapidjson"
 	
 	"lib"
 )

@@ -7,6 +7,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <stdint.h>
+#include <rapidjson/fwd.h>
 
 #include "../gl/shader.hpp"
 #include "../../util/singleton.hpp"
@@ -54,7 +55,7 @@ private:
 	void modifyNotification();
 
 	// DATA
-	std::uint32_t id;
+	std::uint32_t id;	// the fist 16 bits indicate the tamplate, the last 16 indicate the instance
 
 };
 
@@ -62,13 +63,13 @@ private:
 class MaterialManager : public Singleton<MaterialManager>
 {
 public:
-	MaterialTemplate createMaterialTemplate();
-	MaterialTemplate loadMaterialTemplate();
+
+	MaterialTemplate loadMaterialTemplate(const char* fileName);
 	
 	void releaseMaterialTemplate(MaterialTemplate materialTemplate);
 
 	Material createMaterial(MaterialTemplate materialTemplate);
-	Material loadMaterial();
+	Material loadMaterial(const char* fileName);
 
 	void releaseMaterial(Material material);
 
@@ -80,36 +81,45 @@ private:
 
 	MaterialManager();
 
+	MaterialTemplate loadMaterialTemplate(rapidjson::Document& doc);
+
 	// DATA //
 	const unsigned MB = 1024 * 1024;
 	const unsigned MATERIAL_TEMPLATE_CHUNK_SIZE = 4 * MB;
 	const unsigned MATERIAL_CHUNK_LENGTH = 128;
+
 	std::vector<void*> materialTemplateDataChunks;
+
+	/* Storage for the material values
+	 The outer vector has one entry for each material template
+	 The inner vector will have entries depending the necesary memory space
+	 The fist entry in the inner vector is the default value for the materials of the corresponding template */
 	std::vector<std::vector<void*> > materialDataChunks;
+
+	/* Table for fast lookup of material template
+	 Given the material template id you get the offset to the first byte
+	 Since the are several chuncks of data you will have to perform the integer division
+	  ( / MATERIAL_TEMPLATE_CHUNK_SIZE) in order to get the chunk id. Then you can get
+	  the actual offset inside the chunk with the ramainder ( % MATERIAL_TEMPLATE_CHUNK_SIZE) */
 	std::vector<unsigned> materialTemplateOffsets;
+
+	std::map<std::string, std::uint16_t> materialTemplateNameToId;	// the name is actually the path
+	std::map<std::uint16_t, std::string> materialTemplateIdToName;
 
 	std::vector<std::uint32_t> nextMaterialFreeSlot;
 
 	struct MaterialTemplateEntryHeader
 	{
-		//-HEADER-//
-		// This is the header every material template has
-		std::uint16_t shaderProgramId;	
+		std::uint32_t shaderProgramId;
 		std::uint16_t numSlots;
+		std::uint16_t flags;
 		std::uint32_t materialSize;
-		char name[56];
-
-		//-BODY-//
-		// for each slot
-		//     - type (2 byte)
-		//     - unifid (2 byte)
-		//     - name (60 bytes)
 	};
 	struct MaterialTamplateEntrySlot
 	{
-		std::uint16_t type;
-		std::uint16_t unifId;
-		char name[60];
+		std::uint16_t type;		// type of the uniform
+		std::uint16_t unifLoc;	// uniform location
+		char name[28];			// uniform name
 	};
 
 	struct MaterialEntryHeader
