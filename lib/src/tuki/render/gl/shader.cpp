@@ -86,109 +86,52 @@ UnifType getUnifTypeFromName(const char* name)
 
 // SHADER
 
-void Shader::loadFromString(const char* src, unsigned type)
+void ShaderObject::loadFromString(const char* src)
 {
 	// the shader has to be loaded only once, otherwise there will be memory leaks
 	assert(shaderId < 0 && "The shader has been already loaded");
 
-	shaderId = glCreateShader(type);
 	glShaderSource(shaderId, 1, &src, 0);
-
-	status = Status::LOADED;
 }
 
-void Shader::loadFromFile(const char* fileName, unsigned type)
+void ShaderObject::loadFromFile(const char* fileName)
 {
-	try
-	{
-		string src = loadStringFromFile(fileName);
-		loadFromString(src.c_str());
-		status = Status::LOADED;
-	}
-	catch (runtime_error e)
-	{
-		cout << e.what() << endl;
-		status = Status::LOAD_ERROR;
-	}
+	string src = loadStringFromFile(fileName);
+	loadFromString(src.c_str());
 }
 
-void Shader::compile()
+void ShaderObject::compile()
 {
-	assert(status == Status::LOADED && "Attempted to compile shader before loading source");
-
 	glCompileShader(shaderId);
 
 	GLint compiled;
 	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &compiled);
 	if (!compiled)
 	{
-		status = Status::COMPILE_ERROR;
-	}
-	else
-	{
-		status = Status::COMPILED;
+		GLint logLen;
+		glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &logLen);
+		string logString(logLen, ' ');
+		glGetShaderInfoLog(shaderId, logLen, NULL, &logString[0]);
+		glDeleteShader(shaderId);
+		throw logString;
 	}
 }
 
-string Shader::getCompileError()const
-{
-	assert(status == Status::COMPILE_ERROR && "Attempted to get compile error of a shader that didn't fail compiling");
-
-	GLint logLen;
-	glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &logLen);
-	string logString(logLen, ' ');
-	glGetShaderInfoLog(shaderId, logLen, NULL, &logString[0]);
-	glDeleteShader(shaderId);
-	return logString;
-}
-
-void Shader::destroy()
+void ShaderObject::destroy()
 {
 	assert(shaderId >= 0 && "Attempted to destroy shader before creating it");
 
 	glDeleteShader(shaderId);
-	status = Status::DESTROYED;
 }
 
-// VERTEX SHADER
-
-void VertexShader::loadFromString(const char* src)
-{
-	Shader::loadFromString(src, GL_VERTEX_SHADER);
-}
-
-void VertexShader::loadFromFile(const char* fileName)
-{
-	Shader::loadFromFile(fileName, GL_VERTEX_SHADER);
-}
-
-// FRAGMENT SHADER
-
-void FragmentShader::loadFromString(const char* src)
-{
-	Shader::loadFromString(src, GL_FRAGMENT_SHADER);
-}
-
-void FragmentShader::loadFromFile(const char* fileName)
-{
-	Shader::loadFromFile(fileName, GL_FRAGMENT_SHADER);
-}
-
-// GEOMETRY SHADER
-void GeometryShader::loadFromString(const char* src)
-{
-	Shader::loadFromString(src, GL_GEOMETRY_SHADER);
-}
-
-void GeometryShader::loadFromFile(const char* fileName)
-{
-	Shader::loadFromFile(fileName, GL_GEOMETRY_SHADER);
-}
+void VertexShaderObject::create() { shaderId = glCreateShader(GL_VERTEX_SHADER); }
+void FragmentShaderObject::create() { shaderId = glCreateShader(GL_FRAGMENT_SHADER); }
+void GeometryShaderObject::create() { shaderId = glCreateShader(GL_GEOMETRY_SHADER); }
 
 
 // SHADER PROGRAM
 
-void ShaderProgram::init()
+void ShaderProgram::create()
 {
 	program = glCreateProgram();
 }
@@ -198,52 +141,36 @@ void ShaderProgram::bindAttrib(const char* name, int loc)
 	glBindAttribLocation(program, loc, name);
 }
 
-void ShaderProgram::setVertexShader(VertexShader vertShad)
+void ShaderProgram::setVertexShader(VertexShaderObject vertShad)
 {
-	this->vertShad = vertShad;
 	glAttachShader(program, vertShad.getId());
 }
 
-void ShaderProgram::setFragmentShader(FragmentShader fragShad)
+void ShaderProgram::setFragmentShader(FragmentShaderObject fragShad)
 {
-	this->fragShad = fragShad;
 	glAttachShader(program, fragShad.getId());
 }
 
-void ShaderProgram::setGeometryShader(GeometryShader geomShad)
+void ShaderProgram::setGeometryShader(GeometryShaderObject geomShad)
 {
-	this->geomShad = geomShad;
 	glAttachShader(program, geomShad.getId());
 }
 
 void ShaderProgram::link()
 {
-	const bool compiledOk = vertShad.hasCompiledOk() && fragShad.hasCompiledOk() &&
-		(!hasGeometryShader() || (hasGeometryShader() && geomShad.hasCompiledOk()));
-	assert(compiledOk && "Attempted to link shader program with uncompiled objects");
-
 	glLinkProgram(program);
 
 	// check if the linking failed
 	int linkedOk;
 	glGetProgramiv(program, GL_LINK_STATUS, &linkedOk);
-	if (!linkedOk) status = Status::LINK_ERROR;
-	else status = Status::LINKED;
-	
-	if (vertShad.getId() >= 0) glDetachShader(program, vertShad.getId());
-	if (fragShad.getId() >= 0) glDetachShader(program, fragShad.getId());
-	if (geomShad.getId() >= 0) glDetachShader(program, geomShad.getId());
-}
-
-string ShaderProgram::getLinkError()const
-{
-	assert(status == Status::LINK_ERROR && "Attempted to get link error message without having failed");
-
-	GLint len;
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
-	string str = string(len, ' ');
-	glGetProgramInfoLog(program, len, NULL, &str[0]);
-	return str;
+	if (!linkedOk)
+	{
+		GLint len;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+		string str = string(len, ' ');
+		glGetProgramInfoLog(program, len, NULL, &str[0]);
+		throw str;
+	}
 }
 
 void ShaderProgram::use()

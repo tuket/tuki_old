@@ -38,70 +38,51 @@ const char* getUnifTypeName(UnifType ut);
 UnifType getUnifTypeFromName(const char* name);
 
 // SHADER
-class Shader
+class ShaderObject
 {
 public:
-	enum class Status
-	{
-		START,
-		LOADED,
-		LOAD_ERROR,
-		COMPILED,
-		COMPILE_ERROR,
-		DESTROYED = START
-	};
 
 protected:
 
-	Shader() : shaderId(-1), status(Status::START) {}
+	ShaderObject() : shaderId(-1){}
 
-	void loadFromString(const char* src, unsigned type);
-	void loadFromFile(const char* fileName, unsigned type);
+	void loadFromString(const char* src);
+	void loadFromFile(const char* fileName);
 
 public:
-	Status getStatus()const { return status; }
+
 	ShaderId getId()const { return shaderId; }
 
-	virtual void loadFromString(const char* src) = 0;
-	virtual void loadFromFile(const char* fileName) = 0;
-	bool isLoaded()const { return status == Status::LOADED; }
-
 	void compile();
-	bool hasCompiledOk()const { return status == Status::COMPILED; }
-	std::string getCompileError()const;
 
 	void destroy();
 
 protected:
 	ShaderId shaderId;
-	Status status;
 };
 
 // VERTEX SHADER
-class VertexShader : public Shader
+class VertexShaderObject : public ShaderObject
 {
 public:
-	VertexShader() : Shader() {}
-	void loadFromString(const char* src);
-	void loadFromFile(const char* fileName);
+	VertexShaderObject() : ShaderObject() {}
+	void create();
 };
 
 // FRAGMENT SHADER
-class FragmentShader : public Shader
+class FragmentShaderObject : public ShaderObject
 {
 public:
-	FragmentShader() : Shader() {}
-	void loadFromString(const char* src);
-	void loadFromFile(const char* fileName);
+	FragmentShaderObject() : ShaderObject() {}
+	void create();
 };
 
 // GEOMETRY SHADER
-class GeometryShader : public Shader
+class GeometryShaderObject : public ShaderObject
 {
 public:
-	GeometryShader() : Shader() {}
-	void loadFromString(const char* src);
-	void loadFromFile(const char* fileName);
+	GeometryShaderObject() : ShaderObject() {}
+	void create();
 };
 
 
@@ -109,29 +90,14 @@ public:
 class ShaderProgram
 {
 public:
-
-	enum class Status
-	{
-		START,
-		LINKED,
-		LINK_ERROR,
-		DESTROYED = START
-	};
-	
 	ShaderProgram() : program(-1){}
 
-	void setVertexShader(VertexShader vertShad);
-	void setFragmentShader(FragmentShader fragShad);
-	void setGeometryShader(GeometryShader geomShad);
-
-	bool hasGeometryShader() { return geomShad.isLoaded(); }
-
-	Status getStatus()const { return status; }
-	bool hasLinkedOk()const { return status == Status::LINKED; }
-	std::string getLinkError()const;
+	void setVertexShader(VertexShaderObject vertShad);
+	void setFragmentShader(FragmentShaderObject fragShad);
+	void setGeometryShader(GeometryShaderObject geomShad);
 
 	// these 4 function are intended to be used in order
-	void init();
+	void create();
 	void bindAttrib(const char* name, int loc);
 	void link();
 	void use();
@@ -139,42 +105,35 @@ public:
 
 	int getUniformLocation(const char* name)const;
 	// uniform uploaders
-	void uploadUniform(int location, float value);
-	void uploadUniform(int location, const glm::vec2& value);
-	void uploadUniform(int location, const glm::vec3& value);
-	void uploadUniform(int location, const glm::vec4& value);
-	void uploadUniform(int location, int value);
-	void uploadUniform(int location, const glm::ivec2& value);
-	void uploadUniform(int location, const glm::ivec3& value);
-	void uploadUniform(int location, const glm::ivec4& value);
-	void uploadUniform(int location, const glm::mat2& value);
-	void uploadUniform(int location, const glm::mat3& value);
-	void uploadUniform(int location, const glm::mat4& value);
-	void uploadUniform(int location, const glm::mat2x3& value);
-	void uploadUniform(int location, const glm::mat3x2& value);
-	void uploadUniform(int location, const glm::mat2x4& value);
-	void uploadUniform(int location, const glm::mat4x2& value);
-	void uploadUniform(int location, const glm::mat3x4& value);
-	void uploadUniform(int location, const glm::mat4x3& value);
-	void uploadUniform(int location, TextureUnit value);
+	static void uploadUniform(int location, float value);
+	static void uploadUniform(int location, const glm::vec2& value);
+	static void uploadUniform(int location, const glm::vec3& value);
+	static void uploadUniform(int location, const glm::vec4& value);
+	static void uploadUniform(int location, int value);
+	static void uploadUniform(int location, const glm::ivec2& value);
+	static void uploadUniform(int location, const glm::ivec3& value);
+	static void uploadUniform(int location, const glm::ivec4& value);
+	static void uploadUniform(int location, const glm::mat2& value);
+	static void uploadUniform(int location, const glm::mat3& value);
+	static void uploadUniform(int location, const glm::mat4& value);
+	static void uploadUniform(int location, const glm::mat2x3& value);
+	static void uploadUniform(int location, const glm::mat3x2& value);
+	static void uploadUniform(int location, const glm::mat2x4& value);
+	static void uploadUniform(int location, const glm::mat4x2& value);
+	static void uploadUniform(int location, const glm::mat3x4& value);
+	static void uploadUniform(int location, const glm::mat4x3& value);
+	static void uploadUniform(int location, TextureUnit value);
 	template <typename T>
-	void uploadUniform(const char* name, const T& value)
+	static void uploadUniform(const char* name, const T& value)
 	{
 		int loc = getUniformLocation(name);
 		useProgram();
 		uploadUniform(loc, value);
 	}
 
-
 protected:
-
 	int program;
-	VertexShader vertShad;
-	FragmentShader fragShad;
-	GeometryShader geomShad;
-	Status status;
 
-private:
 	void useProgram();
 
 };
