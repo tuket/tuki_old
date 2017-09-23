@@ -7,13 +7,15 @@
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include "texture.hpp"
+#include <map>
 
 using namespace std;
 using namespace glm;
 
 unsigned getUnifSize(UnifType ut)
 {
-	const unsigned lookUpTable[(unsigned)UnifType::COUNT] =
+	const unsigned n = (unsigned)UnifType::COUNT;
+	const unsigned lookUpTable[n] =
 	{
 		1 * sizeof(float), 2 * sizeof(float), 3 * sizeof(float), 4 * sizeof(float),
 		1 * sizeof(int), 2 * sizeof(int), 3 * sizeof(int), 4 * sizeof(int),
@@ -23,7 +25,63 @@ unsigned getUnifSize(UnifType ut)
 		2*4 * sizeof(float), 4*2 * sizeof(float),
 		3*4 * sizeof(float), 4*3 * sizeof(float),
 	};
-	return lookUpTable[(unsigned)ut];
+	unsigned i = (unsigned)ut;
+	assert(i >= 0 && i < n);
+	return lookUpTable[i];
+}
+
+const char* getUnifTypeName(UnifType ut)
+{
+	const unsigned n = (unsigned)UnifType::COUNT;
+	const char const* lookUpTable[n] =
+	{
+		"float", "vec2", "vec3", "vec4",
+		"int", "ivec2", "ivec3", "ivec4",
+		"uint", "uivec2", "uivec3", "uivec4",
+		"mat2", "mat3", "mat4",
+		"mat2x3", "mat2x4",
+		"mat2x4", "mat4x2",
+		"mat3x4", "mat4x3",
+	};
+	unsigned i = (unsigned)ut;
+	assert(i >= 0 && i < n);
+	return lookUpTable[i];
+}
+
+UnifType getUnifTypeFromName(const char* name)
+{
+	const map<string, UnifType> lookUp =
+	{
+		{ "float", UnifType::FLOAT },
+		{ "vec2", UnifType::VEC2 },
+		{ "vec3", UnifType::VEC3 },
+		{ "vec4", UnifType::VEC4 },
+		{ "int", UnifType::INT },
+		{ "ivec2", UnifType::INT2 },
+		{ "ivec3", UnifType::INT3 },
+		{ "ivec4", UnifType::INT4 },
+		{ "uint", UnifType::UINT },
+		{ "uivec2", UnifType::UINT2 },
+		{ "uivec3", UnifType::UINT3 },
+		{ "uivec4", UnifType::UINT4 },
+		{ "mat2", UnifType::MATRIX_2 },
+		{ "mat3", UnifType::MATRIX_3 },
+		{ "mat4", UnifType::MATRIX_4 },
+		{ "mat2x3", UnifType::MATRIX_2x3 },
+		{ "mat3x2", UnifType::MATRIX_3x2 },
+		{ "mat2x4", UnifType::MATRIX_2x4 },
+		{ "mat4x2", UnifType::MATRIX_4x2 },
+		{ "mat3x4", UnifType::MATRIX_3x4 },
+		{ "mat4x3", UnifType::MATRIX_4x3 }
+	};
+
+	map<string, UnifType>::const_iterator it = lookUp.find(name);
+	if (it == lookUp.end())
+	{
+		throw runtime_error("not recognized unif name type: " + string(name));
+	}
+
+	return it->second;
 }
 
 // SHADER

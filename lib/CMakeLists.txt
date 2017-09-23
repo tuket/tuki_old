@@ -29,6 +29,7 @@ set(SRC_RENDER_GL
 
 set(SRC_RENDER_MATERIAL
 	"material.hpp" "material.cpp"
+	"shader_pool.hpp" "shader_pool.cpp"
 )
 
 set(SRC_RENDER_MESH

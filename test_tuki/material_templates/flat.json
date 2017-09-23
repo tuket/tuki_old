@@ -9,7 +9,7 @@
 		"color":
 		{
 			"type": "vec3"
-			"deafult": {1, 1, 1}
+			"default": {1, 1, 1}
 		},
 		"colorTex":
 		{

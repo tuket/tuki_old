@@ -8,6 +8,7 @@
 #include <glm/vec4.hpp>
 #include <stdint.h>
 #include <rapidjson/fwd.h>
+#include <array>
 
 #include "../gl/shader.hpp"
 #include "../../util/singleton.hpp"
@@ -18,6 +19,7 @@ class MaterialManager;
 // All the data is managed by the MaterialManager, this class is just a flyweight
 class MaterialTemplate
 {
+	friend class MaterialManager;
 public:
 	MaterialTemplate() {}
 
@@ -102,11 +104,17 @@ private:
 	  ( / MATERIAL_TEMPLATE_CHUNK_SIZE) in order to get the chunk id. Then you can get
 	  the actual offset inside the chunk with the ramainder ( % MATERIAL_TEMPLATE_CHUNK_SIZE) */
 	std::vector<unsigned> materialTemplateOffsets;
+	unsigned nextMaterialTemplateOffset;
 
 	std::map<std::string, std::uint16_t> materialTemplateNameToId;	// the name is actually the path
 	std::map<std::uint16_t, std::string> materialTemplateIdToName;
 
 	std::vector<std::uint32_t> nextMaterialFreeSlot;
+
+	std::vector<ShaderProgram> shaderPrograms;
+	// array of 3 elements: vertex, fragment and geometry shader names
+	// in case there is no geometry shader the string will be ""
+	std::map<std::array<std::string, 3>, std::uint16_t> shaderNameToId;
 
 	struct MaterialTemplateEntryHeader
 	{
@@ -115,9 +123,9 @@ private:
 		std::uint16_t flags;
 		std::uint32_t materialSize;
 	};
-	struct MaterialTamplateEntrySlot
+	struct MaterialTemplateEntrySlot
 	{
-		std::uint16_t type;		// type of the uniform
+		UnifType type;		// type of the uniform
 		std::uint16_t unifLoc;	// uniform location
 		char name[28];			// uniform name
 	};
@@ -139,8 +147,10 @@ private:
 	};
 
 	MaterialTemplateEntryHeader* accessMaterialTemplate(std::uint16_t mtid);
+	MaterialTemplateEntryHeader* allocateMaterialTemplate(unsigned numSlots);
 
 	void allocateNewMaterialChunk(std::uint16_t mtid);
+	void allocateNewMaterialTemplateChunk();
 };
 
 

@@ -5,6 +5,7 @@
 #include <glm/vec4.hpp>
 #include <glm/matrix.hpp>
 #include <string>
+#include <numeric>
 
 enum class TextureUnit;
 
@@ -17,7 +18,7 @@ enum class ShaderType
 	GEOMETRY,
 };
 
-enum class UnifType
+enum class UnifType : std::uint16_t
 {
 	FLOAT, VEC2, VEC3, VEC4,
 	INT, INT2, INT3, INT4,
@@ -33,6 +34,8 @@ enum class UnifType
 };
 
 unsigned getUnifSize(UnifType ut);
+const char* getUnifTypeName(UnifType ut);
+UnifType getUnifTypeFromName(const char* name);
 
 // SHADER
 class Shader
