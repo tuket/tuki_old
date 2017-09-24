@@ -46,12 +46,12 @@ protected:
 
 	ShaderObject() : shaderId(-1){}
 
-	void loadFromString(const char* src);
-	void loadFromFile(const char* fileName);
-
 public:
 
 	ShaderId getId()const { return shaderId; }
+
+	void loadFromString(const char* src);
+	void loadFromFile(const char* fileName);
 
 	void compile();
 
@@ -96,8 +96,9 @@ public:
 	void setFragmentShader(FragmentShaderObject fragShad);
 	void setGeometryShader(GeometryShaderObject geomShad);
 
-	// these 4 function are intended to be used in order
+	// these functions are intended to be used in order
 	void create();
+	// setShaders()
 	void bindAttrib(const char* name, int loc);
 	void link();
 	void use();

@@ -1,9 +1,10 @@
 #include "material.hpp"
 
-#include "rapidjson/document.h"
+#include <rapidjson/document.h>
 #include "../../util/util.hpp"
 #include <exception>
 #include <sstream>
+#include "shader_pool.hpp"
 
 using namespace std;
 using namespace rapidjson;
@@ -47,12 +48,25 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 	Value::MemberIterator slotsIt = doc.FindMember("slots");
 	if (slotsIt == doc.MemberEnd()) throw runtime_error("missing 'slots' member");
 
+	string vertShadName, fragShadName, geomShadName = "";
+
 	Value::MemberIterator vertIt = shadersIt->value.FindMember("vert");
 	if (vertIt == shadersIt->value.MemberEnd()) throw runtime_error("shaders/vert is mandatory");
+	if (!vertIt->value.IsString()) throw runtime_error("vert shader must be string");
+	vertShadName = vertIt->value.GetString();
+
 	Value::MemberIterator fragIt = shadersIt->value.FindMember("frag");
 	if (fragIt == shadersIt->value.MemberEnd()) throw runtime_error("sahders/frag is mandatory");
+	if (!fragIt->value.IsString()) throw runtime_error("frag shader must be string");
+	fragShadName = fragIt->value.GetString();
+
 	Value::MemberIterator geomIt = shadersIt->value.FindMember("geom");
-	// geometry shaders are optional
+	if (fragIt != shadersIt->value.MemberEnd())
+	{
+		// geometry shaders are optional
+		if(!geomIt->value.IsString()) throw runtime_error("geom shader must be string");
+		geomShadName = geomIt->value.GetString();
+	}
 
 	vector<string> slotNames;
 	vector<UnifType> types;
@@ -81,12 +95,14 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 
 	uint16_t mtid = materialTemplateOffsets.size();
 	allocateMaterialTemplate(numSlots);
+
+	ShaderPool* shaderPool = ShaderPool::getSingleton();
 	
 	// fill header
 	MaterialTemplateEntryHeader* head = accessMaterialTemplate(mtid);
 	head->numSlots = numSlots;
 	head->materialSize = materialSize;
-	head->shaderProgramId; // TODO;
+	head->shaderProgram = shaderPool->getShaderProgram(vertShadName, fragShadName, geomShadName);
 	head->flags; // TODO
 	
 	// fill slots
@@ -177,6 +193,26 @@ MaterialManager::MaterialTemplateEntryHeader* MaterialManager::allocateMaterialT
 	materialTemplateOffsets.push_back(nextMaterialTemplateOffset);
 
 	nextMaterialTemplateOffset += requiredSpace;
+}
+
+MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint16_t mtid, uint16_t mid)
+{
+	vector<void*>& v = materialDataChunks[mtid];
+	const unsigned n = MATERIAL_CHUNK_LENGTH;
+	MaterialTemplateEntryHeader* tempHead = accessMaterialTemplate(mtid);
+	uint32_t materialSize = tempHead->materialSize;
+	unsigned chunkId = mid / n;
+	char* chunk = (char*)v[chunkId];
+	unsigned index = mid % n;
+	char* data = chunk + materialSize * index;
+	return (MaterialEntryHeader*)data;
+}
+
+MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint32_t id)
+{
+	uint16_t mtid = id >> 16;
+	uint16_t mid = id & 0x0000FFFF;
+	return accessMaterialData(mtid, mid);
 }
 
 void MaterialManager::allocateNewMaterialChunk(uint16_t mtid)

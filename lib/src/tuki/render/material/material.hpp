@@ -45,8 +45,12 @@ public:
 
 	Material(MaterialTemplate materialTemplate);
 
+	std::uint16_t getTemplateId()const { return id >> 16; }
+	std::uint16_t getInstanceId()const { return id & 0x0000FFFF; }
+	std::uint32_t getId()const { return id; }
+
 	template <typename T>
-	void setValue(unsigned slot, T t);
+	void setValue(unsigned slot, T val);
 
 private:
 
@@ -78,6 +82,9 @@ public:
 	const char* getMaterialTemplateName()const;
 
 	void makeUnique(Material& material);
+
+	template <typename T>
+	void setMaterialValue(const Material& material, unsigned slot, T val);
 
 private:
 
@@ -118,16 +125,18 @@ private:
 
 	struct MaterialTemplateEntryHeader
 	{
-		std::uint32_t shaderProgramId;
+		ShaderProgram shaderProgram;
 		std::uint16_t numSlots;
 		std::uint16_t flags;
 		std::uint32_t materialSize;
 	};
 	struct MaterialTemplateEntrySlot
 	{
+		static const unsigned NAME_MAX_SIZE = 24;
 		UnifType type;		// type of the uniform
 		std::uint16_t unifLoc;	// uniform location
-		char name[28];			// uniform name
+		std::uint16_t offset;	// offset within the material
+		char name[NAME_MAX_SIZE];			// uniform name
 	};
 
 	struct MaterialEntryHeader
@@ -149,15 +158,33 @@ private:
 	MaterialTemplateEntryHeader* accessMaterialTemplate(std::uint16_t mtid);
 	MaterialTemplateEntryHeader* allocateMaterialTemplate(unsigned numSlots);
 
+	MaterialEntryHeader* accessMaterialData(std::uint16_t mtid, std::uint16_t mid);
+	MaterialEntryHeader* accessMaterialData(std::uint32_t id);
+
 	void allocateNewMaterialChunk(std::uint16_t mtid);
 	void allocateNewMaterialTemplateChunk();
 };
 
 
 template <typename T>
-void Material::setValue(unsigned slot, T t)
+void Material::setValue(unsigned slot, T val)
 {
 	MaterialManager* man = MaterialManager::getSingleton();
 	if (!isUnique()) man->makeUnique(this);
-	man->
+	man->setMaterialValue(*this, slot, val);
+}
+
+template <typename T>
+void MaterialManager::setMaterialValue(const Material& material, unsigned slot, T val)
+{
+	uint16_t mtid = material.getTemplateId();
+	uint16_t mid = material.getInstanceId();
+	MaterialTemplateEntryHeader* tempHead = accessMaterialTemplate(mtid);
+	MaterialTemplateEntrySlot* tempSlot = (MaterialTemplateEntrySlot*)tempHead[1];
+	tempSlot = &tempSlot[slot];
+	unsigned slotOffset = tempSlot->offset;
+	MaterialEntryHeader* matHead = accessMaterialData(mtid, mid);
+	char* data = (char*)&matHead[1];
+	data = data + slotOffset;
+	*((T*)data) = val;
 }
