@@ -5,8 +5,8 @@
 using namespace std;
 
 ShaderProgram ShaderPool::getShaderProgram(
-	const std::string& vertShadPath, const std::string& fragShadPath,
-	const std::string& geomShadPath,
+	const string& vertShadPath, const string& fragShadPath,
+	const string& geomShadPath,
 	AttribInitilizer attribInitializer)
 {
 	auto vsIt = vertShaderNameToId.find(vertShadPath);
@@ -44,7 +44,9 @@ ShaderProgram ShaderPool::getShaderProgram(
 		vertShad.loadFromFile(vertShadPath.c_str());
 		vertShad.compile();
 		vs = vertShaders.size();
+
 		vertShaders.push_back(vertShad);
+		vertShaderNameToId[vertShadPath] = vs;
 	}
 
 	// create fragment shader id needed
@@ -59,7 +61,9 @@ ShaderProgram ShaderPool::getShaderProgram(
 		fragShad.loadFromFile(fragShadPath.c_str());
 		fragShad.compile();
 		fs = fragShaders.size();
+
 		fragShaders.push_back(fragShad);
+		fragShaderNameToId[fragShadPath] = fs;
 	}
 
 	// create geometry shader id needed
@@ -76,7 +80,9 @@ ShaderProgram ShaderPool::getShaderProgram(
 			geomShad.loadFromFile(geomShadPath.c_str());
 			geomShad.compile();
 			gs = geomShaders.size();
+
 			geomShaders.push_back(geomShad);
+			geomShaderNameToId[geomShadPath] = gs;
 		}
 	}
 
@@ -92,20 +98,10 @@ ShaderProgram ShaderPool::getShaderProgram(
 
 	prog.link();
 
+	int progId = programs.size();
+	programs.push_back(prog);
+	shadersToProgram[{vs, fs, gs}] = progId;
+	programToShaders[progId] = { vs, fs, gs };
+
 	return prog;
-}
-
-void ShaderPool::getVertShader()
-{
-
-}
-
-void ShaderPool::getFragShader()
-{
-
-}
-
-void ShaderPool::getGeomShader()
-{
-
 }
