@@ -70,16 +70,16 @@ class MaterialManager : public Singleton<MaterialManager>
 {
 public:
 
-	MaterialTemplate loadMaterialTemplate(const char* fileName);
+	MaterialTemplate loadMaterialTemplate(const std::string& path);
 	
-	void releaseMaterialTemplate(MaterialTemplate materialTemplate);
+	//void releaseMaterialTemplate(MaterialTemplate materialTemplate); // TODO?
 
 	Material createMaterial(MaterialTemplate materialTemplate);
-	Material loadMaterial(const char* fileName);
+	Material loadMaterial(const std::string& path);
 
 	void releaseMaterial(Material material);
 
-	const char* getMaterialTemplateName()const;
+	std::string getMaterialTemplateName(MaterialTemplate materialTemplate)const;
 
 	void makeUnique(Material& material);
 
@@ -91,6 +91,7 @@ private:
 	MaterialManager();
 
 	MaterialTemplate loadMaterialTemplate(rapidjson::Document& doc);
+	Material loadMaterial(rapidjson::Document& doc);
 
 	// DATA //
 	const unsigned MB = 1024 * 1024;

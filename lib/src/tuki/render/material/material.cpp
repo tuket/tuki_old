@@ -28,13 +28,14 @@ Material::Material(MaterialTemplate materialTemplate)
 {
 	MaterialManager* man = MaterialManager::getSingleton();
 	Material mat = man->createMaterial(materialTemplate);
+	id = mat.id;
 }
 
 // MATERIAL MANAGER
 
-MaterialTemplate MaterialManager::loadMaterialTemplate(const char* fileName)
+MaterialTemplate MaterialManager::loadMaterialTemplate(const string& path)
 {
-	string txt = loadStringFromFile(fileName);
+	string txt = loadStringFromFile(path.c_str());
 	Document doc;
 	doc.Parse(txt.c_str());
 	MaterialTemplate res = loadMaterialTemplate(doc);
@@ -128,6 +129,62 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 	return templ;
 }
 
+Material MaterialManager::loadMaterial(rapidjson::Document& doc)
+{
+	// CCP
+
+}
+
+Material MaterialManager::createMaterial(MaterialTemplate materialTemplate)
+{
+	const uint16_t mtid = materialTemplate.getId();
+	Material material;
+	material.id = mtid << 16;
+	return material;
+}
+
+Material MaterialManager::loadMaterial(const string& path)
+{
+	string txt = loadStringFromFile(path.c_str());
+	Document doc;
+	doc.Parse(txt.c_str());
+	Material res = loadMaterial(doc);
+	return res;
+}
+
+void MaterialManager::releaseMaterial(Material material)
+{
+	const uint32_t id = material.getId();
+	const uint16_t mtid = id >> 16;
+	const uint16_t mid = id & 0xFFFF;
+	const unsigned slotId = mid % MATERIAL_CHUNK_LENGTH;
+	const unsigned chunkId = mid / MATERIAL_CHUNK_LENGTH;
+	if (mid == 0)
+	{
+		// 0 corresponds tho the template default value which mustn not be released
+		return;
+	}
+
+	MaterialTemplateEntryHeader* templHead =  accessMaterialTemplate(mtid);
+	const unsigned materialSize = templHead->materialSize;
+
+	// insert in the free slot chain, last realeased -> fist reused
+	MaterialEntryHeader* matHead = accessMaterialData(material.id);
+	uint32_t nextFree = matHead->nextFree;
+	matHead->nextFree = nextMaterialFreeSlot[mtid];
+	nextMaterialFreeSlot[mtid] = nextFree;
+}
+
+string MaterialManager::getMaterialTemplateName(MaterialTemplate materialTemplate)const
+{
+	auto it = materialTemplateIdToName.find(materialTemplate.getId());
+	if (it == materialTemplateIdToName.end())
+	{
+		throw runtime_error("the material template doesn't exist");
+	}
+	return it->second;
+}
+
 void MaterialManager::makeUnique(Material& material)
 {
 	uint32_t id = material.id;
@@ -142,27 +199,32 @@ void MaterialManager::makeUnique(Material& material)
 	const unsigned materialSize = header->materialSize;
 	vector<void*>& chunks = materialDataChunks[mtid];
 
-	char* prevChunk = (char*)chunks[mtid];
-	char* pSrcSlot = &prevChunk[materialSize * mid];
+	char* srcChunk = (char*)chunks[mtid];
+	char* pSrcSlot = &srcChunk[materialSize * mid];
 	MaterialEntryHeader* prevSlotHeader = (MaterialEntryHeader*)pSrcSlot;
-	if (prevSlotHeader->header.sharedCount < 2)
+
+	// the material with mid 0 is the deafult value of the template
+	// we don't want to reference count that one because it must always be there for fast copying
+	if (mid != 0 && prevSlotHeader->header.sharedCount < 2)
 	{
 		assert(false && "the material was already unique");
 		return;
 	}
 	
-	uint16_t nextInvalid = MaterialManager::MATERIAL_CHUNK_LENGTH;
-	if ((uint16_t)nextMaterialFreeSlot[mtid] == nextInvalid) allocateNewMaterialChunk(mtid);
+	// we use 0 for saying "there aren't free slots" because 0 is never free
+	// 0 is reserved for the template default value and should never be realeased
+	if ((uint16_t)nextMaterialFreeSlot[mtid] == 0) allocateNewMaterialChunk(mtid);
 
 	uint32_t newMaterialSlot = nextMaterialFreeSlot[mtid];
-	uint16_t newMid = newMaterialSlot;
-	char* newChunk = (char*)chunks[mtid];
-	char* pDstSlot = &newChunk[materialSize * newMid];
+	uint32_t slotIndex = newMaterialSlot & 0xFFFF;
+	uint32_t chunkIndex = newMaterialSlot >> 16;
+	char* dstChunk = (char*)chunks[chunkIndex];
+	char* pDstSlot = &dstChunk[materialSize * slotIndex];
 	MaterialEntryHeader* newSlotHeader = (MaterialEntryHeader*)pDstSlot;
 	nextMaterialFreeSlot[mtid] = newSlotHeader->nextFree;
 
 	const unsigned headerSize = sizeof(unsigned);
-	memcpy(pDstSlot + headerSize, pSrcSlot + headerSize, materialSize);
+	memcpy(pDstSlot + headerSize, pSrcSlot + headerSize, materialSize - headerSize);
 
 	prevSlotHeader->header.sharedCount--;
 	newSlotHeader->header.sharedCount = 1;
@@ -225,16 +287,18 @@ void MaterialManager::allocateNewMaterialChunk(uint16_t mtid)
 
 	const unsigned materialSlotSize = header->materialSize + sizeof(unsigned);
 
-	void* data = new char[materialSlotSize * MATERIAL_CHUNK_LENGTH];
+	char* data = new char[materialSlotSize * MATERIAL_CHUNK_LENGTH];
 	materialDataChunks[mtid].push_back(data);
 
+	const uint32_t mtid32 = mtid;
 	for (unsigned i = 0; i < MATERIAL_CHUNK_LENGTH; i++)
 	{
 		MaterialEntryHeader* header =
-			(MaterialEntryHeader*)&materialDataChunks[i * materialSlotSize];
-		uint32_t mtid32 = mtid;
+			(MaterialEntryHeader*) (&data[i * materialSlotSize]);
 		header->nextFree = (mtid32 << 16) || i;
 	}
+
+	nextMaterialFreeSlot[mtid] = mtid32 << 16;
 }
 
 void MaterialManager::allocateNewMaterialTemplateChunk()
