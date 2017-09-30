@@ -35,10 +35,31 @@ Material::Material(MaterialTemplate materialTemplate)
 
 MaterialTemplate MaterialManager::loadMaterialTemplate(const string& path)
 {
+	MaterialTemplate existing = getMaterialTemplate(path);
+	if (existing.id >= 0) return existing;
+
 	string txt = loadStringFromFile(path.c_str());
 	Document doc;
 	doc.Parse(txt.c_str());
 	MaterialTemplate res = loadMaterialTemplate(doc);
+	materialTemplateNameToId[path] = res.id;
+	materialTemplateIdToName[res.id] = path;
+
+	return res;
+}
+
+MaterialTemplate MaterialManager::getMaterialTemplate(const string& path)const
+{
+	const auto it = materialTemplateNameToId.find(path);
+	MaterialTemplate res;
+	if (it == materialTemplateNameToId.end())
+	{
+		res.id = -1;
+	}
+	else
+	{
+		res.id = it->second;
+	}
 	return res;
 }
 
@@ -132,7 +153,29 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 Material MaterialManager::loadMaterial(rapidjson::Document& doc)
 {
 	// CCP
+	Value::MemberIterator templateIt = doc.FindMember("template");
+	if (templateIt == doc.MemberEnd()) throw runtime_error("missing 'template' member");
 
+	if (!templateIt->value.IsString()) throw runtime_error("'template' must be string");
+	string templatePath = templateIt->value.GetString();
+
+	MaterialTemplate templ = loadMaterialTemplate(templatePath);
+	MaterialTemplateEntryHeader* templHead = accessMaterialTemplate(templ.id);
+	
+	Material mat;
+	Value::MemberIterator slotsIt = doc.FindMember("slots");
+	if (slotsIt == doc.MemberEnd())
+	{
+		mat = createMaterial(templ);
+		return mat;
+	}
+
+	mat = duplicateMaterialAndMakeUnique(templ.id << 16);
+	
+	MaterialEntryHeader* matHead = accessMaterialData(mat.id);
+	char* matData = (char*)&matHead[1];
+
+	matHead->header.
 }
 
 Material MaterialManager::createMaterial(MaterialTemplate materialTemplate)
@@ -199,13 +242,15 @@ void MaterialManager::makeUnique(Material& material)
 	const unsigned materialSize = header->materialSize;
 	vector<void*>& chunks = materialDataChunks[mtid];
 
-	char* srcChunk = (char*)chunks[mtid];
-	char* pSrcSlot = &srcChunk[materialSize * mid];
-	MaterialEntryHeader* prevSlotHeader = (MaterialEntryHeader*)pSrcSlot;
+	uint32_t srcSlotIndex = mid % MATERIAL_CHUNK_LENGTH;
+	uint32_t srcChunkIndex = mid / MATERIAL_CHUNK_LENGTH;
+	char* srcChunk = (char*)chunks[srcChunkIndex];
+	char* pSrcSlot = &srcChunk[materialSize * srcSlotIndex];
+	MaterialEntryHeader* srcSlotHeader = (MaterialEntryHeader*)pSrcSlot;
 
 	// the material with mid 0 is the deafult value of the template
 	// we don't want to reference count that one because it must always be there for fast copying
-	if (mid != 0 && prevSlotHeader->header.sharedCount < 2)
+	if (mid != 0 && srcSlotHeader->header.sharedCount < 2)
 	{
 		assert(false && "the material was already unique");
 		return;
@@ -220,14 +265,16 @@ void MaterialManager::makeUnique(Material& material)
 	uint32_t chunkIndex = newMaterialSlot >> 16;
 	char* dstChunk = (char*)chunks[chunkIndex];
 	char* pDstSlot = &dstChunk[materialSize * slotIndex];
-	MaterialEntryHeader* newSlotHeader = (MaterialEntryHeader*)pDstSlot;
-	nextMaterialFreeSlot[mtid] = newSlotHeader->nextFree;
+	MaterialEntryHeader* dstSlotHeader = (MaterialEntryHeader*)pDstSlot;
+	nextMaterialFreeSlot[mtid] = dstSlotHeader->nextFree;
 
 	const unsigned headerSize = sizeof(unsigned);
 	memcpy(pDstSlot + headerSize, pSrcSlot + headerSize, materialSize - headerSize);
 
-	prevSlotHeader->header.sharedCount--;
-	newSlotHeader->header.sharedCount = 1;
+	srcSlotHeader->header.sharedCount--;
+	dstSlotHeader->header.sharedCount = 1;
+
+	material.id = mtid | (chunkIndex * MATERIAL_CHUNK_LENGTH + slotIndex);
 }
 
 MaterialManager::MaterialTemplateEntryHeader* MaterialManager::accessMaterialTemplate(std::uint16_t mtid)
@@ -295,7 +342,7 @@ void MaterialManager::allocateNewMaterialChunk(uint16_t mtid)
 	{
 		MaterialEntryHeader* header =
 			(MaterialEntryHeader*) (&data[i * materialSlotSize]);
-		header->nextFree = (mtid32 << 16) || i;
+		header->nextFree = (mtid32 << 16) || (i + 1);
 	}
 
 	nextMaterialFreeSlot[mtid] = mtid32 << 16;
@@ -305,4 +352,42 @@ void MaterialManager::allocateNewMaterialTemplateChunk()
 {
 	void* chunk = new char[MATERIAL_CHUNK_LENGTH];
 	materialTemplateDataChunks.push_back(chunk);
+}
+
+Material MaterialManager::duplicateMaterialAndMakeUnique(std::uint32_t id)
+{
+	const uint16_t mtid = id >> 16;
+	const uint16_t mid = id | 0xFFFF;
+
+	MaterialTemplateEntryHeader* templHead = accessMaterialTemplate(mtid);
+	const unsigned materialSize = templHead->materialSize;
+
+	vector<void*>& chunks = materialDataChunks[mtid];
+	uint32_t srcSlotIndex = mid % MATERIAL_CHUNK_LENGTH;
+	uint32_t srcChunkIndex = mid / MATERIAL_CHUNK_LENGTH;
+	char* srcChunk = (char*)chunks[srcChunkIndex];
+	char* pSrcSlot = &srcChunk[materialSize * srcSlotIndex];
+	MaterialEntryHeader* srcSlotHeader = (MaterialEntryHeader*)pSrcSlot;
+
+	// we use 0 for saying "there aren't free slots" because 0 is never free
+	// 0 is reserved for the template default value and should never be realeased
+	if ((uint16_t)nextMaterialFreeSlot[mtid] == 0) allocateNewMaterialChunk(mtid);
+
+	uint32_t newMaterialSlot = nextMaterialFreeSlot[mtid];
+	uint32_t slotIndex = newMaterialSlot & 0xFFFF;
+	uint32_t chunkIndex = newMaterialSlot >> 16;
+	char* dstChunk = (char*)chunks[chunkIndex];
+	char* pDstSlot = &dstChunk[materialSize * slotIndex];
+	MaterialEntryHeader* dstSlotHeader = (MaterialEntryHeader*)pDstSlot;
+	nextMaterialFreeSlot[mtid] = dstSlotHeader->nextFree;
+
+	const unsigned headerSize = sizeof(unsigned);
+	memcpy(pDstSlot + headerSize, pSrcSlot + headerSize, materialSize - headerSize);
+
+	dstSlotHeader->header.sharedCount = 1;
+}
+
+Material MaterialManager::duplicateMaterialAndMakeUnique(Material material)
+{
+	return duplicateMaterialAndMakeUnique(material.id);
 }

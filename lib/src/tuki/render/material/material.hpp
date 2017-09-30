@@ -70,6 +70,10 @@ class MaterialManager : public Singleton<MaterialManager>
 {
 public:
 
+	// get the material template if loaded, pthorwise the id will be -1
+	MaterialTemplate getMaterialTemplate(const std::string& path)const;
+
+	// load the material file from a file, if has been already loaded returns the same object
 	MaterialTemplate loadMaterialTemplate(const std::string& path);
 	
 	//void releaseMaterialTemplate(MaterialTemplate materialTemplate); // TODO?
@@ -87,11 +91,6 @@ public:
 	void setMaterialValue(const Material& material, unsigned slot, T val);
 
 private:
-
-	MaterialManager();
-
-	MaterialTemplate loadMaterialTemplate(rapidjson::Document& doc);
-	Material loadMaterial(rapidjson::Document& doc);
 
 	// DATA //
 	const unsigned MB = 1024 * 1024;
@@ -124,6 +123,7 @@ private:
 	// in case there is no geometry shader the string will be ""
 	std::map<std::array<std::string, 3>, std::uint16_t> shaderNameToId;
 
+	// TYPES //
 	struct MaterialTemplateEntryHeader
 	{
 		ShaderProgram shaderProgram;
@@ -131,7 +131,7 @@ private:
 		std::uint16_t flags;
 		std::uint32_t materialSize;
 	};
-	struct MaterialTemplateEntrySlot
+	struct MaterialTemplateEntrySlot	// < sorted by name!
 	{
 		static const unsigned NAME_MAX_SIZE = 24;
 		UnifType type;		// type of the uniform
@@ -155,6 +155,15 @@ private:
 			std::uint32_t nextFree;	// 16 most significant bits: chunkIndex, rest: chunkSlotIndex
 		};
 	};
+
+	// FUNCTIONS //
+	MaterialManager();
+
+	MaterialTemplate loadMaterialTemplate(rapidjson::Document& doc);
+	Material loadMaterial(rapidjson::Document& doc);
+
+	Material duplicateMaterialAndMakeUnique(std::uint32_t id);
+	Material duplicateMaterialAndMakeUnique(Material material);
 
 	MaterialTemplateEntryHeader* accessMaterialTemplate(std::uint16_t mtid);
 	MaterialTemplateEntryHeader* allocateMaterialTemplate(unsigned numSlots);
