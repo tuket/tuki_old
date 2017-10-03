@@ -1,10 +1,13 @@
 #include "material.hpp"
 
 #include <rapidjson/document.h>
+#include <rapidjson/allocators.h>
+#include <rapidjson/internal/>
 #include "../../util/util.hpp"
 #include <exception>
 #include <sstream>
 #include "shader_pool.hpp"
+#include "../../util/multi_sort.hpp"
 
 using namespace std;
 using namespace rapidjson;
@@ -16,10 +19,10 @@ std::uint16_t MaterialTemplate::getId()const
 	return id;
 }
 
-const char* MaterialTemplate::getName()const
+string MaterialTemplate::getName()const
 {
 	MaterialManager* man = MaterialManager::getSingleton();
-	return man->getMaterialTemplateName();
+	return man->getMaterialTemplateName(*this);
 }
 
 // MATERIAL
@@ -65,6 +68,9 @@ MaterialTemplate MaterialManager::getMaterialTemplate(const string& path)const
 
 MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 {
+	ShaderPool* shaderPool = ShaderPool::getSingleton();
+	const unsigned maxSlotNameSize = sizeof(MaterialTemplateEntrySlot::name);
+
 	Value::MemberIterator shadersIt = doc.FindMember("shaders");
 	if (shadersIt == doc.MemberEnd()) throw runtime_error("missing 'shaders' member");
 	Value::MemberIterator slotsIt = doc.FindMember("slots");
@@ -92,13 +98,21 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 
 	vector<string> slotNames;
 	vector<UnifType> types;
-	vector<Value::MemberIterator> defaultValueIts;
+	vector<Value::MemberIterator> sortedIts;
 	for (Value::MemberIterator it = slotsIt->value.MemberBegin();
 		it != slotsIt->value.MemberEnd();
 		it++)
 	{
 		if (!it->name.IsString()) throw runtime_error("slot names must be strings");
 		string name = it->name.GetString();
+
+		if (name.size() >= maxSlotNameSize)
+		{
+			stringstream ss;
+			ss << maxSlotNameSize - 1;
+			throw runtime_error("attrib name is longer than " + ss.str() + " characters");
+		}
+
 		slotNames.push_back(name);
 
 		Value::MemberIterator typeIt = it->value.FindMember("type");
@@ -107,9 +121,10 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 		UnifType type = getUnifTypeFromName(typeIt->value.GetString());
 		types.push_back(type);
 
-		Value::MemberIterator defIt = it->value.FindMember("default");
-		defaultValueIts.push_back(defIt);
+		sortedIts.push_back(it);
 	}
+
+	sortVectorsAscending(slotNames, slotNames, types, sortedIts);
 
 	const unsigned numSlots = slotNames.size();
 	unsigned materialSize = 0;
@@ -117,33 +132,57 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 
 	uint16_t mtid = materialTemplateOffsets.size();
 	allocateMaterialTemplate(numSlots);
-
-	ShaderPool* shaderPool = ShaderPool::getSingleton();
 	
 	// fill header
 	MaterialTemplateEntryHeader* head = accessMaterialTemplate(mtid);
 	head->numSlots = numSlots;
 	head->materialSize = materialSize;
-	head->shaderProgram = shaderPool->getShaderProgram(vertShadName, fragShadName, geomShadName);
+	ShaderProgram shaderProgram =
+		head->shaderProgram =
+		shaderPool->getShaderProgram(vertShadName, fragShadName, geomShadName);
 	head->flags; // TODO
 	
 	// fill slots
 	MaterialTemplateEntrySlot* slots = (MaterialTemplateEntrySlot*)(head + 1);
-	for (unsigned i=0; i<numSlots; i++)
+	for (unsigned i = 0; i < numSlots; i++)
 	{
-		const unsigned maxSlotNameSize = sizeof(MaterialTemplateEntrySlot::name);
-		if (slotNames[i].size() >= maxSlotNameSize)
-		{
-			stringstream ss;
-			ss << maxSlotNameSize - 1;
-			throw runtime_error("attrib name is longer than " + ss.str() + " characters");
-		}
+		const string& name = slotNames[i];
+		
 		strncpy(slots[i].name, slotNames[i].c_str(), maxSlotNameSize);
 
 		slots[i].type = types[i];
 
-		slots[i].unifLoc; // TODO
+		slots[i].unifLoc = shaderProgram.getUniformLocation(name.c_str());
 	}
+
+	// default values
+	nextMaterialFreeSlot[mtid] = 0;
+	allocateNewMaterialChunk(mtid);
+
+	MaterialEntryHeader* matHead = accessMaterialData(((uint32_t)mtid) << 16);
+	matHead->header.sharedCount = -1;
+
+	for (unsigned i = 0; i < numSlots; i++)
+	{
+		Value::MemberIterator it = sortedIts[i];
+		Value::MemberIterator defIt = it->value.FindMember("default");
+		if (defIt != it->value.MemberEnd())
+		{
+			// parse specified default
+			parseJsonValueAndSet(defIt->value, types[i], i, matHead, head);
+		}
+		else
+		{
+			// use the default default: just zero
+			const unsigned size = getUnifSize(types[i]);
+			MaterialTemplateEntrySlot* templSlots = (MaterialTemplateEntrySlot*)&head[1];
+			unsigned offset = templSlots[i].offset;
+			char* data = (char*)&matHead[1];
+			data = data + offset;
+			memset(data, 0, size);
+		}
+	}
+	nextMaterialFreeSlot[mtid] = 1;
 
 	MaterialTemplate templ;
 	templ.id = mtid;
@@ -152,7 +191,6 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 
 Material MaterialManager::loadMaterial(rapidjson::Document& doc)
 {
-	// CCP
 	Value::MemberIterator templateIt = doc.FindMember("template");
 	if (templateIt == doc.MemberEnd()) throw runtime_error("missing 'template' member");
 
@@ -169,13 +207,22 @@ Material MaterialManager::loadMaterial(rapidjson::Document& doc)
 		mat = createMaterial(templ);
 		return mat;
 	}
+	if (!slotsIt->value.IsObject()) throw runtime_error("'slots' must be an object");
+	Value::Object slotsObj = slotsIt->value.GetObject();
 
 	mat = duplicateMaterialAndMakeUnique(templ.id << 16);
 	
 	MaterialEntryHeader* matHead = accessMaterialData(mat.id);
 	char* matData = (char*)&matHead[1];
 
-	matHead->header.
+	matHead->header.sharedCount = 1;
+
+	for (Value::MemberIterator it = slotsObj.MemberBegin();
+		it != slotsObj.MemberEnd();
+		++it)
+	{
+		// CCP
+	}
 }
 
 Material MaterialManager::createMaterial(MaterialTemplate materialTemplate)
@@ -391,3 +438,109 @@ Material MaterialManager::duplicateMaterialAndMakeUnique(Material material)
 {
 	return duplicateMaterialAndMakeUnique(material.id);
 }
+
+void parseJsonArrayAndSet(
+	char* dataOutput,
+	UnifType type,
+	const Value::ConstArray& a
+)
+{
+	static int xdata[64];
+
+	UnifType basicType = getUnifBasicType(type);
+	unsigned n = getUnifNumElems(type);
+
+	unsigned count = 0;
+	for (Value::ConstValueIterator it = a.Begin(); it != a.End(); ++it)
+	{
+		if (count >= n)
+		{
+			throw runtime_error("too many elements");
+		}
+
+		if (basicType == UnifType::FLOAT)
+		{
+			float* x = (float*)xdata;
+			if (!it->IsFloat())
+			{
+				stringstream ss;
+				ss << "[" << count << "]" + string(" must be float");
+				throw runtime_error(ss.str());
+			}
+			x[count] = it->GetFloat();
+		}
+		else if (basicType == UnifType::INT)
+		{
+			int* x = xdata;
+			if (!it->IsInt())
+			{
+				stringstream ss;
+				ss << "[" << count << "]" + string(" must be int");
+				throw runtime_error(ss.str());
+			}
+			x[count] = it->GetInt();
+		}
+		else if (basicType == UnifType::UINT)
+		{
+			unsigned* x = (unsigned*)xdata;
+			if (!it->IsUint())
+			{
+				stringstream ss;
+				ss << "[" << count << "]" + string(" must be unsigned");
+				throw runtime_error(ss.str());
+			}
+			x[count] = it->GetUint();
+		}
+		else
+		{
+			assert(false && "basic type not implemented");
+		}
+		
+		count++;
+	}
+	if (count < n) throw runtime_error(string("too few elements"));
+
+	copy(xdata, &xdata[n], dataOutput);
+}
+
+void MaterialManager::parseJsonValueAndSet(
+	const Value& val,
+	UnifType type,
+	unsigned slot,
+	MaterialEntryHeader* matHead,
+	MaterialTemplateEntryHeader* templHead
+)
+{
+	MaterialTemplateEntrySlot* templSlots = (MaterialTemplateEntrySlot*)&templHead[1];
+	unsigned offset = templSlots[slot].offset;
+	char* data = (char*)&matHead[1];
+	data = data + offset;
+
+	if (type == UnifType::FLOAT)
+	{
+		if (!val.IsFloat()) throw runtime_error(templSlots[slot].name + string(" must be float"));
+
+		float x[1] = { val.GetFloat() };
+		copy(x, &x[1], data);
+	}
+	else if (type == UnifType::INT)
+	{
+
+	}
+	else if (type == UnifType::UINT)
+	{
+
+	}
+	else if (type == UnifType::TEXTURE)
+	{
+
+	}
+	else	// vectors and materices
+	{
+		if (!val.IsArray()) throw runtime_error(templSlots[slot].name + string(" must be an array"));
+		Value::ConstArray a = val.GetArray();
+		parseJsonArrayAndSet(data, type, a);
+	}
+
+}
+

@@ -24,7 +24,7 @@ public:
 	MaterialTemplate() {}
 
 	std::uint16_t getId()const;
-	const char* getName()const;
+	std::string getName()const;
 
 private:
 
@@ -118,11 +118,6 @@ private:
 
 	std::vector<std::uint32_t> nextMaterialFreeSlot;
 
-	std::vector<ShaderProgram> shaderPrograms;
-	// array of 3 elements: vertex, fragment and geometry shader names
-	// in case there is no geometry shader the string will be ""
-	std::map<std::array<std::string, 3>, std::uint16_t> shaderNameToId;
-
 	// TYPES //
 	struct MaterialTemplateEntryHeader
 	{
@@ -173,6 +168,15 @@ private:
 
 	void allocateNewMaterialChunk(std::uint16_t mtid);
 	void allocateNewMaterialTemplateChunk();
+
+	void parseJsonValueAndSet(
+		const rapidjson::Value& val,
+		UnifType type,
+		unsigned slot,
+		MaterialEntryHeader* matHead,
+		MaterialTemplateEntryHeader* templHead
+	);
+
 };
 
 

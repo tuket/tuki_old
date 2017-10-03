@@ -34,6 +34,8 @@ enum class UnifType : std::uint16_t
 };
 
 unsigned getUnifSize(UnifType ut);
+unsigned getUnifNumElems(UnifType ut);
+UnifType getUnifBasicType(UnifType ut);
 const char* getUnifTypeName(UnifType ut);
 UnifType getUnifTypeFromName(const char* name);
 

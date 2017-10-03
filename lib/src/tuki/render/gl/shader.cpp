@@ -30,6 +30,38 @@ unsigned getUnifSize(UnifType ut)
 	return lookUpTable[i];
 }
 
+unsigned getUnifNumElems(UnifType ut)
+{
+	const unsigned n = (unsigned)UnifType::COUNT;
+	const unsigned lookUpTable[n] =
+	{
+		1, 2, 3, 4,
+		1, 2, 3, 4,
+		1, 2, 3, 4,
+		2 * 2, 3 * 3, 4 * 4,
+		2 * 3, 3 * 2,
+		2 * 4, 4 * 2,
+		3 * 4, 4 * 3,
+	};
+	unsigned i = (unsigned)ut;
+	assert(i >= 0 && i < n);
+	return lookUpTable[i];
+}
+
+UnifType getUnifBasicType(UnifType ut)
+{
+	const unsigned n = (unsigned) UnifType::COUNT;
+	const unsigned i1 = (unsigned) UnifType::INT;
+	const unsigned i2 = (unsigned) UnifType::INT4;
+	const unsigned u1 = (unsigned) UnifType::UINT;
+	const unsigned u2 = (unsigned) UnifType::UINT4;
+	unsigned i = (unsigned)ut;
+	assert(i >= 0 && i < n);
+	if (i1 <= i <= i2) return UnifType::INT;
+	if (u1 <= i <= u2) return UnifType::UINT;
+	return UnifType::FLOAT;
+}
+
 const char* getUnifTypeName(UnifType ut)
 {
 	const unsigned n = (unsigned)UnifType::COUNT;
