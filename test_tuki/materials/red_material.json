@@ -1,5 +1,5 @@
 {
-	"template": "flat"
+	"template": "material_templates/flat"
 	"slots":
 	{
 		"color": {0.9, 0.2, 0.05}

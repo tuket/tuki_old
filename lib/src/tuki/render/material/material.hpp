@@ -26,6 +26,8 @@ public:
 	std::uint16_t getId()const;
 	std::string getName()const;
 
+	void bindProgram();
+
 private:
 
 	// offset to the first byte from the MaterialManager allocator
@@ -51,6 +53,12 @@ public:
 
 	template <typename T>
 	void setValue(unsigned slot, T val);
+
+	// use this material for drawing, the material template program will be bound automatically
+	void use();
+
+	// use this material fro drawing, the material template program has to be bound
+	void useBatched();
 
 private:
 
@@ -92,6 +100,12 @@ public:
 
 	template <typename T>
 	void setMaterialValueUnsafe(const Material& material, unsigned slot, T val);
+
+	void bindMaterialTemplateProgram(MaterialTemplate& templ);
+
+	void useMaterial(const Material& material);
+	void useMaterialBatched(const Material& material);
+	void useMaterialBatched(uint16_t mtid, uint16_t mid);
 
 private:
 
@@ -181,12 +195,14 @@ private:
 
 	uint16_t nameToSlot(const std::string& name, MaterialTemplateEntryHeader* head)const;
 
+
 };
 
 
 template <typename T>
 void Material::setValue(unsigned slot, T val)
 {
+	modifyNotification();
 	MaterialManager* man = MaterialManager::getSingleton();
 	man->setMaterialValue(*this, slot, val);
 }

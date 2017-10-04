@@ -12,8 +12,6 @@ class ShaderPool : public Singleton<ShaderPool>
 {
 public:
 
-
-
 	ShaderProgram getShaderProgram(
 		const std::string& vertShadPath, const std::string& fragShadPath,
 		const std::string& geomShadPath = "",

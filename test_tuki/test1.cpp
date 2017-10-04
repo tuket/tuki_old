@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <glad/glad.h>
 #include <tuki/render/gl/render.hpp>
+#include <tuki/render/material/material.hpp>
 
 using namespace std;
 
@@ -49,32 +50,8 @@ int main(int argc, char** argv)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_CULL_FACE);
 	
-	VertexShader vertShad;
-	vertShad.loadFromFile("shaders/uv_quad.vs");
-	vertShad.compile();
-	if (!vertShad.hasCompiledOk())
-	{
-		cout << vertShad.getCompileError() << endl;
-	}
-	FragmentShader fragShad;
-	fragShad.loadFromFile("shaders/uv_quad.fs");
-	fragShad.compile();
-	if (!fragShad.hasCompiledOk())
-	{
-		cout << fragShad.getCompileError() << endl;
-	}
-	ShaderProgram prog;
-	prog.init();
-	prog.setVertexShader(vertShad);
-	prog.setFragmentShader(fragShad);
-	AttribInitilizers::uv(prog);
-	prog.link();
-	if (!prog.hasLinkedOk())
-	{
-		cout << prog.getLinkError() << endl;
-	}
-
-	prog.uploadUniform("color", glm::vec3(1, 1, 0));
+	MaterialManager* materialManager = MaterialManager::getSingleton();
+	Material material = materialManager->loadMaterial("materials/flat.json");
 
 	UvPlaneMeshGpu uvPlane;
 	uvPlane.load();
@@ -101,7 +78,7 @@ int main(int argc, char** argv)
 		
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		prog.use();
+		materialManager();
 		uvPlane.bind();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

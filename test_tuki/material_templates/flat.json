@@ -1,8 +1,8 @@
 {
 	shaders:
 	{
-		"vert": "flat.vs"
-		"frag": "flat.fs"
+		"vert": "shaders/simple.vs"
+		"frag": "shaders/flat.fs"
 	},
 	"slots":
 	{
@@ -10,11 +10,6 @@
 		{
 			"type": "vec3"
 			"default": {1, 1, 1}
-		},
-		"colorTex":
-		{
-			"type": "texture",
-			"default": {"constant": "white"}
 		}
 	}
 }

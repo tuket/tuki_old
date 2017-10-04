@@ -116,6 +116,10 @@ public:
 	static void uploadUniform(int location, const glm::ivec2& value);
 	static void uploadUniform(int location, const glm::ivec3& value);
 	static void uploadUniform(int location, const glm::ivec4& value);
+	static void uploadUniform(int location, unsigned value);
+	static void uploadUniform(int location, const glm::uvec2& value);
+	static void uploadUniform(int location, const glm::uvec3& value);
+	static void uploadUniform(int location, const glm::uvec4& value);
 	static void uploadUniform(int location, const glm::mat2& value);
 	static void uploadUniform(int location, const glm::mat3& value);
 	static void uploadUniform(int location, const glm::mat4& value);
@@ -133,6 +137,7 @@ public:
 		useProgram();
 		uploadUniform(loc, value);
 	}
+	static void uploadUniformData(UnifType type, int location, const char* data);
 
 protected:
 	int program;

@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "texture.hpp"
 #include <map>
+#include <exception>
 
 using namespace std;
 using namespace glm;
@@ -269,6 +270,26 @@ void ShaderProgram::uploadUniform(int location, const ivec4& value)
 	glUniform4iv(location, 1, &value[0]);
 }
 
+void ShaderProgram::uploadUniform(int location, unsigned value)
+{
+	glUniform1ui(location, value);
+}
+
+void ShaderProgram::uploadUniform(int location, const glm::uvec2& value)
+{
+	glUniform2uiv(location, 1, &value[0]);
+}
+
+void ShaderProgram::uploadUniform(int location, const glm::uvec3& value)
+{
+	glUniform3uiv(location, 1, &value[0]);
+}
+
+void ShaderProgram::uploadUniform(int location, const glm::uvec4& value)
+{
+	glUniform4uiv(location, 1, &value[0]);
+}
+
 void ShaderProgram::uploadUniform(int location, const mat2& value)
 {
 	glUniformMatrix2fv(location, 1, GL_FALSE, value_ptr(value));
@@ -317,4 +338,148 @@ void ShaderProgram::uploadUniform(int location, const mat4x3& value)
 void ShaderProgram::uploadUniform(int location, TextureUnit value)
 {
 	glUniform1i(location, (int)value);
+}
+
+void ShaderProgram::uploadUniformData(UnifType type, int loc, const char* data)
+{
+	switch (type)
+	{
+
+	case UnifType::FLOAT:
+	{
+		const float* x = (float*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::VEC2:
+	{
+		const vec2* x = (vec2*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::VEC3:
+	{
+		const vec3* x = (vec3*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::VEC4:
+	{
+		const vec4* x = (vec4*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+
+	case UnifType::INT:
+	{
+		const int* x = (int*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::INT2:
+	{
+		const ivec2* x = (ivec2*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::INT3:
+	{
+		const ivec3* x = (ivec3*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::INT4:
+	{
+		const ivec4* x = (ivec4*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+
+	case UnifType::UINT:
+	{
+		const unsigned* x = (unsigned*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::UINT2:
+	{
+		const uvec2* x = (uvec2*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::UINT3:
+	{
+		const uvec3* x = (uvec3*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::UINT4:
+	{
+		const uvec4* x = (uvec4*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+
+	case UnifType::MATRIX_2:
+	{
+		const mat2* x = (mat2*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::MATRIX_3:
+	{
+		const mat3* x = (mat3*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::MATRIX_4:
+	{
+		const mat4* x = (mat4*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+
+	case UnifType::MATRIX_2x3:
+	{
+		const mat2x3* x = (mat2x3*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::MATRIX_3x2:
+	{
+		const mat3x2* x = (mat3x2*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+
+	case UnifType::MATRIX_2x4:
+	{
+		const mat2x4* x = (mat2x4*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::MATRIX_4x2:
+	{
+		const mat4x2* x = (mat4x2*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+
+	case UnifType::MATRIX_3x4:
+	{
+		const mat3x4* x = (mat3x4*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+	case UnifType::MATRIX_4x3:
+	{
+		const mat4x3* x = (mat4x3*)data;
+		uploadUniform(loc, *x);
+		break;
+	}
+
+	default:
+		throw runtime_error("UnifType not recognized");
+
+	} // end switch
 }

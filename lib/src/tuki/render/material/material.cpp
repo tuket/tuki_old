@@ -7,9 +7,11 @@
 #include <sstream>
 #include "shader_pool.hpp"
 #include "../../util/multi_sort.hpp"
+#include <glm/common.hpp>
 
 using namespace std;
 using namespace rapidjson;
+using namespace glm;
 
 // MATERIAL TEMPLATE
 
@@ -24,6 +26,12 @@ string MaterialTemplate::getName()const
 	return man->getMaterialTemplateName(*this);
 }
 
+void MaterialTemplate::bindProgram()
+{
+	MaterialManager* man = MaterialManager::getSingleton();
+	man->bindMaterialTemplateProgram(*this);
+}
+
 // MATERIAL
 
 Material::Material(MaterialTemplate materialTemplate)
@@ -31,6 +39,26 @@ Material::Material(MaterialTemplate materialTemplate)
 	MaterialManager* man = MaterialManager::getSingleton();
 	Material mat = man->createMaterial(materialTemplate);
 	id = mat.id;
+}
+
+void Material::use()
+{
+
+}
+
+void Material::useBatched()
+{
+
+}
+
+bool Material::isUnique()const
+{
+
+}
+
+void Material::modifyNotification()
+{
+
 }
 
 // MATERIAL MANAGER
@@ -436,6 +464,42 @@ Material MaterialManager::duplicateMaterialAndMakeUnique(std::uint32_t id)
 	dstSlotHeader->header.sharedCount = 1;
 }
 
+void MaterialManager::useMaterial(const Material& material)
+{
+	uint16_t mtid = material.id >> 16;
+	uint16_t mid = (uint16_t)material.id;
+	MaterialTemplateEntryHeader* head = accessMaterialTemplate(mtid);
+	head->shaderProgram.use();
+	useMaterialBatched(mtid, mid);
+}
+
+void MaterialManager::useMaterialBatched(const Material& material)
+{
+	uint16_t mtid = material.id >> 16;
+	uint16_t mid = (uint16_t)material.id;
+	useMaterialBatched(mtid, mid);
+}
+
+void MaterialManager::useMaterialBatched(uint16_t mtid, uint16_t mid)
+{
+	MaterialTemplateEntryHeader* templHead = accessMaterialTemplate(mtid);
+	MaterialEntryHeader* matHead = accessMaterialData(mid);
+	const unsigned n = templHead->numSlots;
+	MaterialTemplateEntrySlot* templSlots = (MaterialTemplateEntrySlot*)&templHead[1];
+	ShaderProgram& prog = templHead->shaderProgram;
+	char* data = (char*)&matHead[1];
+
+	for (unsigned slot = 0; slot < n; slot++)
+	{
+		UnifType type = templSlots[slot].type;
+		unsigned offset = templSlots[slot].offset;
+		unsigned loc = templSlots[slot].unifLoc;
+		char* slotData = data + offset;
+
+		prog.uploadUniformData(type, loc, slotData);
+	}
+}
+
 Material MaterialManager::duplicateMaterialAndMakeUnique(Material material)
 {
 	return duplicateMaterialAndMakeUnique(material.id);
@@ -574,4 +638,10 @@ uint16_t MaterialManager::nameToSlot(const string& name, MaterialTemplateEntryHe
 		}
 	}
 	throw runtime_error("slot name '" + name + "' does not exist");
+}
+
+void MaterialManager::bindMaterialTemplateProgram(MaterialTemplate& templ)
+{
+	MaterialTemplateEntryHeader* head = accessMaterialTemplate(templ.id);
+	head->shaderProgram.use();
 }
