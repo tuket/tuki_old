@@ -2,7 +2,6 @@
 
 #include <rapidjson/document.h>
 #include <rapidjson/allocators.h>
-#include <rapidjson/internal/>
 #include "../../util/util.hpp"
 #include <exception>
 #include <sstream>
@@ -169,7 +168,7 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 		if (defIt != it->value.MemberEnd())
 		{
 			// parse specified default
-			parseJsonValueAndSet(defIt->value, types[i], i, matHead, head);
+			parseJsonValueAndSet(defIt->value, i, matHead, head);
 		}
 		else
 		{
@@ -210,7 +209,7 @@ Material MaterialManager::loadMaterial(rapidjson::Document& doc)
 	if (!slotsIt->value.IsObject()) throw runtime_error("'slots' must be an object");
 	Value::Object slotsObj = slotsIt->value.GetObject();
 
-	mat = duplicateMaterialAndMakeUnique(templ.id << 16);
+	mat = duplicateMaterialAndMakeUnique(templ.id << 16);	// duplicate the default value
 	
 	MaterialEntryHeader* matHead = accessMaterialData(mat.id);
 	char* matData = (char*)&matHead[1];
@@ -221,7 +220,10 @@ Material MaterialManager::loadMaterial(rapidjson::Document& doc)
 		it != slotsObj.MemberEnd();
 		++it)
 	{
-		// CCP
+		if (!it->name.IsString()) throw runtime_error("slot names must be string");
+		string slotName = it->value.GetString();
+		uint16_t slot = nameToSlot(slotName, templHead);
+		parseJsonValueAndSet(it->value, slot, matHead, templHead);
 	}
 }
 
@@ -505,12 +507,14 @@ void parseJsonArrayAndSet(
 
 void MaterialManager::parseJsonValueAndSet(
 	const Value& val,
-	UnifType type,
 	unsigned slot,
 	MaterialEntryHeader* matHead,
 	MaterialTemplateEntryHeader* templHead
 )
 {
+	MaterialTemplateEntrySlot* templSlots = (MaterialTemplateEntrySlot*)&templHead[1];
+	UnifType type = templSlots[slot].type;
+
 	MaterialTemplateEntrySlot* templSlots = (MaterialTemplateEntrySlot*)&templHead[1];
 	unsigned offset = templSlots[slot].offset;
 	char* data = (char*)&matHead[1];
@@ -525,15 +529,21 @@ void MaterialManager::parseJsonValueAndSet(
 	}
 	else if (type == UnifType::INT)
 	{
+		if(!val.IsInt()) throw runtime_error(templSlots[slot].name + string(" must be int"));
 
+		int x[1] = { val.GetFloat() };
+		copy(x, &x[1], data);
 	}
 	else if (type == UnifType::UINT)
 	{
+		if (!val.IsUint()) throw runtime_error(templSlots[slot].name + string(" must be unisgned"));
 
+		unsigned x[1] = { val.GetUint() };
+		copy(x, &x[1], data);
 	}
 	else if (type == UnifType::TEXTURE)
 	{
-
+		// TODO: texture manager
 	}
 	else	// vectors and materices
 	{
@@ -544,3 +554,24 @@ void MaterialManager::parseJsonValueAndSet(
 
 }
 
+// performs a binary search because slots are sorted by name
+uint16_t MaterialManager::nameToSlot(const string& name, MaterialTemplateEntryHeader* head)const
+{
+	const MaterialTemplateEntrySlot* slots = (const MaterialTemplateEntrySlot*)&head[1];
+	const unsigned n = head->numSlots;
+	unsigned i, j, ij;
+	i = 0;
+	j = n - 1;
+	while (i <= j)
+	{
+		ij = (i + j) / 2;
+		string ijName = slots[ij].name;
+		if (name == ijName) return ij;
+		else
+		{
+			if (name < ijName) j = ij - 1;
+			else			   i = ij + 1;
+		}
+	}
+	throw runtime_error("slot name '" + name + "' does not exist");
+}

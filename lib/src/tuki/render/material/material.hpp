@@ -88,7 +88,10 @@ public:
 	void makeUnique(Material& material);
 
 	template <typename T>
-	void setMaterialValue(const Material& material, unsigned slot, T val);
+	void setMaterialValue(Material& material, unsigned slot, T val);
+
+	template <typename T>
+	void setMaterialValueUnsafe(const Material& material, unsigned slot, T val);
 
 private:
 
@@ -171,11 +174,12 @@ private:
 
 	void parseJsonValueAndSet(
 		const rapidjson::Value& val,
-		UnifType type,
 		unsigned slot,
 		MaterialEntryHeader* matHead,
 		MaterialTemplateEntryHeader* templHead
 	);
+
+	uint16_t nameToSlot(const std::string& name, MaterialTemplateEntryHeader* head)const;
 
 };
 
@@ -184,12 +188,18 @@ template <typename T>
 void Material::setValue(unsigned slot, T val)
 {
 	MaterialManager* man = MaterialManager::getSingleton();
-	if (!isUnique()) man->makeUnique(this);
 	man->setMaterialValue(*this, slot, val);
 }
 
 template <typename T>
-void MaterialManager::setMaterialValue(const Material& material, unsigned slot, T val)
+void MaterialManager::setMaterialValue(Material& material, unsigned slot, T val)
+{
+	if (!material.isUnique()) makeUnique(material);
+	setMaterialValueUnsafe(material, slot, val);
+}
+
+template <typename T>
+void MaterialManager::setMaterialValueUnsafe(const Material& material, unsigned slot, T val)
 {
 	uint16_t mtid = material.getTemplateId();
 	uint16_t mid = material.getInstanceId();
