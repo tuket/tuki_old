@@ -4,6 +4,11 @@
 
 using namespace std;
 
+ShaderPool::ShaderPool()
+{
+
+}
+
 ShaderProgram ShaderPool::getShaderProgram(
 	const string& vertShadPath, const string& fragShadPath,
 	const string& geomShadPath,

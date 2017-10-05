@@ -18,6 +18,7 @@ public:
 		AttribInitilizer attribInitializer = AttribInitilizers::generic);
 
 private:
+	friend class Singleton<ShaderPool>;
 	ShaderPool();
 
 	// DATA

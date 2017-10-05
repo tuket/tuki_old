@@ -1,15 +1,15 @@
 {
-	shaders:
+	"shaders":
 	{
-		"vert": "shaders/simple.vs"
+		"vert": "shaders/simple.vs",
 		"frag": "shaders/flat.fs"
 	},
 	"slots":
 	{
 		"color":
 		{
-			"type": "vec3"
-			"default": {1, 1, 1}
+			"type": "vec3",
+			"default": [1, 1, 1]
 		}
 	}
 }

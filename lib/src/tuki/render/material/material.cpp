@@ -2,6 +2,7 @@
 
 #include <rapidjson/document.h>
 #include <rapidjson/allocators.h>
+#include <rapidjson/error/en.h>
 #include "../../util/util.hpp"
 #include <exception>
 #include <sstream>
@@ -43,30 +44,39 @@ Material::Material(MaterialTemplate materialTemplate)
 
 void Material::use()
 {
-
+	MaterialManager* man = MaterialManager::getSingleton();
+	man->useMaterial(*this);
 }
 
 void Material::useBatched()
 {
-
+	MaterialManager* man = MaterialManager::getSingleton();
+	man->useMaterialBatched(*this);
 }
 
 bool Material::isUnique()const
 {
-
+	MaterialManager* man = MaterialManager::getSingleton();
+	return man->isUnique(*this);
 }
 
 void Material::modifyNotification()
 {
-
+	MaterialManager* man = MaterialManager::getSingleton();
+	if (!man->isUnique(*this)) man->makeUnique(*this);
 }
 
 // MATERIAL MANAGER
 
+MaterialManager::MaterialManager()
+{
+
+}
+
 MaterialTemplate MaterialManager::loadMaterialTemplate(const string& path)
 {
 	MaterialTemplate existing = getMaterialTemplate(path);
-	if (existing.id >= 0) return existing;
+	if (existing.id != 0xFFFF) return existing;
 
 	string txt = loadStringFromFile(path.c_str());
 	Document doc;
@@ -116,7 +126,7 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 	fragShadName = fragIt->value.GetString();
 
 	Value::MemberIterator geomIt = shadersIt->value.FindMember("geom");
-	if (fragIt != shadersIt->value.MemberEnd())
+	if (geomIt != shadersIt->value.MemberEnd())
 	{
 		// geometry shaders are optional
 		if(!geomIt->value.IsString()) throw runtime_error("geom shader must be string");
@@ -218,6 +228,7 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 
 Material MaterialManager::loadMaterial(rapidjson::Document& doc)
 {
+	assert(doc.IsObject());
 	Value::MemberIterator templateIt = doc.FindMember("template");
 	if (templateIt == doc.MemberEnd()) throw runtime_error("missing 'template' member");
 
@@ -268,6 +279,11 @@ Material MaterialManager::loadMaterial(const string& path)
 	string txt = loadStringFromFile(path.c_str());
 	Document doc;
 	doc.Parse(txt.c_str());
+	if (doc.HasParseError())
+	{
+		string errorMsg = GetParseError_En(doc.GetParseError());
+		throw runtime_error(errorMsg);
+	}
 	Material res = loadMaterial(doc);
 	return res;
 }
@@ -303,6 +319,12 @@ string MaterialManager::getMaterialTemplateName(MaterialTemplate materialTemplat
 		throw runtime_error("the material template doesn't exist");
 	}
 	return it->second;
+}
+
+bool MaterialManager::isUnique(const Material& mat)const
+{
+	const MaterialEntryHeader* matHead = accessMaterialData(mat.getId());
+	return matHead->header.sharedCount == 1;
 }
 
 void MaterialManager::makeUnique(Material& material)
@@ -354,13 +376,21 @@ void MaterialManager::makeUnique(Material& material)
 	material.id = mtid | (chunkIndex * MATERIAL_CHUNK_LENGTH + slotIndex);
 }
 
-MaterialManager::MaterialTemplateEntryHeader* MaterialManager::accessMaterialTemplate(std::uint16_t mtid)
+const MaterialManager::MaterialTemplateEntryHeader* MaterialManager::accessMaterialTemplate(std::uint16_t mtid)const
 {
 	const unsigned offset = materialTemplateOffsets[mtid];
 	const unsigned chunkIndex = offset / MATERIAL_TEMPLATE_CHUNK_SIZE;
 	const unsigned chunkOffset = offset % MATERIAL_TEMPLATE_CHUNK_SIZE;
 	char* chunk = (char*)materialTemplateDataChunks[chunkIndex];
 	return (MaterialManager::MaterialTemplateEntryHeader*) chunk[offset];
+}
+
+MaterialManager::MaterialTemplateEntryHeader* MaterialManager::accessMaterialTemplate(std::uint16_t mtid)
+{
+	return
+		const_cast<MaterialTemplateEntryHeader*>(
+			static_cast<const MaterialManager*>(this)->accessMaterialTemplate(mtid)
+		);
 }
 
 MaterialManager::MaterialTemplateEntryHeader* MaterialManager::allocateMaterialTemplate(unsigned numSlots)
@@ -381,17 +411,32 @@ MaterialManager::MaterialTemplateEntryHeader* MaterialManager::allocateMaterialT
 	nextMaterialTemplateOffset += requiredSpace;
 }
 
-MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint16_t mtid, uint16_t mid)
+const MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint16_t mtid, uint16_t mid)const
 {
-	vector<void*>& v = materialDataChunks[mtid];
+	const vector<void*>& v = materialDataChunks[mtid];
 	const unsigned n = MATERIAL_CHUNK_LENGTH;
-	MaterialTemplateEntryHeader* tempHead = accessMaterialTemplate(mtid);
+	const MaterialTemplateEntryHeader* tempHead = accessMaterialTemplate(mtid);
 	uint32_t materialSize = tempHead->materialSize;
 	unsigned chunkId = mid / n;
 	char* chunk = (char*)v[chunkId];
 	unsigned index = mid % n;
 	char* data = chunk + materialSize * index;
 	return (MaterialEntryHeader*)data;
+}
+
+const MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint32_t id)const
+{
+	uint16_t mtid = id >> 16;
+	uint16_t mid = id & 0x0000FFFF;
+	return accessMaterialData(mtid, mid);
+}
+
+MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint16_t mtid, uint16_t mid)
+{
+	return
+		const_cast<MaterialEntryHeader*>(
+				static_cast<const MaterialManager*>(this)->accessMaterialData(mtid, mid)
+		);
 }
 
 MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint32_t id)
@@ -462,6 +507,11 @@ Material MaterialManager::duplicateMaterialAndMakeUnique(std::uint32_t id)
 	memcpy(pDstSlot + headerSize, pSrcSlot + headerSize, materialSize - headerSize);
 
 	dstSlotHeader->header.sharedCount = 1;
+
+	uint32_t newMid = slotIndex + MATERIAL_CHUNK_LENGTH * chunkIndex;
+	Material material;
+	material.id = ((uint32_t)mtid) << 16 | newMid;
+	return material;
 }
 
 void MaterialManager::useMaterial(const Material& material)
@@ -579,7 +629,6 @@ void MaterialManager::parseJsonValueAndSet(
 	MaterialTemplateEntrySlot* templSlots = (MaterialTemplateEntrySlot*)&templHead[1];
 	UnifType type = templSlots[slot].type;
 
-	MaterialTemplateEntrySlot* templSlots = (MaterialTemplateEntrySlot*)&templHead[1];
 	unsigned offset = templSlots[slot].offset;
 	char* data = (char*)&matHead[1];
 	data = data + offset;

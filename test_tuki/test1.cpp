@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 	glEnable(GL_CULL_FACE);
 	
 	MaterialManager* materialManager = MaterialManager::getSingleton();
-	Material material = materialManager->loadMaterial("materials/flat.json");
+	Material material = materialManager->loadMaterial("materials/red_material.json");
 
 	UvPlaneMeshGpu uvPlane;
 	uvPlane.load();
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 		
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		materialManager();
+		material.use();
 		uvPlane.bind();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

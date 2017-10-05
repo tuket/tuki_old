@@ -93,6 +93,7 @@ public:
 
 	std::string getMaterialTemplateName(MaterialTemplate materialTemplate)const;
 
+	bool isUnique(const Material& mat)const;
 	void makeUnique(Material& material);
 
 	template <typename T>
@@ -169,6 +170,7 @@ private:
 	};
 
 	// FUNCTIONS //
+	friend class Singleton<MaterialManager>;
 	MaterialManager();
 
 	MaterialTemplate loadMaterialTemplate(rapidjson::Document& doc);
@@ -178,10 +180,13 @@ private:
 	Material duplicateMaterialAndMakeUnique(Material material);
 
 	MaterialTemplateEntryHeader* accessMaterialTemplate(std::uint16_t mtid);
+	const MaterialTemplateEntryHeader* accessMaterialTemplate(std::uint16_t mtid)const;
 	MaterialTemplateEntryHeader* allocateMaterialTemplate(unsigned numSlots);
 
 	MaterialEntryHeader* accessMaterialData(std::uint16_t mtid, std::uint16_t mid);
 	MaterialEntryHeader* accessMaterialData(std::uint32_t id);
+	const MaterialEntryHeader* accessMaterialData(std::uint16_t mtid, std::uint16_t mid)const;
+	const MaterialEntryHeader* accessMaterialData(std::uint32_t id)const;
 
 	void allocateNewMaterialChunk(std::uint16_t mtid);
 	void allocateNewMaterialTemplateChunk();
