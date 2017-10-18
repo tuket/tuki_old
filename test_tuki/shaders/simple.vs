@@ -7,7 +7,7 @@ uniform mat3 normalMat;
 
 in vec3 attribPos;
 in vec3 attribColor;
-in vec3 attribTexCoord;
+in vec2 attribTexCoord;
 in vec3 attribNormal;
 in vec3 attribTangent;
 in vec3 attribBitangent;

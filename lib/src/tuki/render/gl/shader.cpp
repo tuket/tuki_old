@@ -58,8 +58,8 @@ UnifType getUnifBasicType(UnifType ut)
 	const unsigned u2 = (unsigned) UnifType::UINT4;
 	unsigned i = (unsigned)ut;
 	assert(i >= 0 && i < n);
-	if (i1 <= i <= i2) return UnifType::INT;
-	if (u1 <= i <= u2) return UnifType::UINT;
+	if (i1 <= i && i <= i2) return UnifType::INT;
+	if (u1 <= i && i <= u2) return UnifType::UINT;
 	return UnifType::FLOAT;
 }
 
@@ -122,7 +122,7 @@ UnifType getUnifTypeFromName(const char* name)
 void ShaderObject::loadFromString(const char* src)
 {
 	// the shader has to be loaded only once, otherwise there will be memory leaks
-	assert(shaderId < 0 && "The shader has been already loaded");
+	assert(shaderId >= 0 && "The shader has been already loaded");
 
 	glShaderSource(shaderId, 1, &src, 0);
 }
@@ -146,7 +146,7 @@ void ShaderObject::compile()
 		string logString(logLen, ' ');
 		glGetShaderInfoLog(shaderId, logLen, NULL, &logString[0]);
 		glDeleteShader(shaderId);
-		throw logString;
+		throw runtime_error(logString);
 	}
 }
 

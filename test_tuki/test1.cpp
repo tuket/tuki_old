@@ -51,7 +51,13 @@ int main(int argc, char** argv)
 	glEnable(GL_CULL_FACE);
 	
 	MaterialManager* materialManager = MaterialManager::getSingleton();
-	Material material = materialManager->loadMaterial("materials/red_material.json");
+	Material material;
+	try {
+		material = materialManager->loadMaterial("materials/red_material.json");
+	}
+	catch (runtime_error e){
+		cout << e.what() << endl;
+	}
 
 	UvPlaneMeshGpu uvPlane;
 	uvPlane.load();

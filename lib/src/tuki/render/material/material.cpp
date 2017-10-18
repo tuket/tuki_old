@@ -5,6 +5,7 @@
 #include <rapidjson/error/en.h>
 #include "../../util/util.hpp"
 #include <exception>
+#include <iostream>
 #include <sstream>
 #include "shader_pool.hpp"
 #include "../../util/multi_sort.hpp"
@@ -70,7 +71,9 @@ void Material::modifyNotification()
 
 MaterialManager::MaterialManager()
 {
-
+	// fist allocation
+	allocateNewMaterialTemplateChunk();
+	nextMaterialTemplateOffset = 0;
 }
 
 MaterialTemplate MaterialManager::loadMaterialTemplate(const string& path)
@@ -121,7 +124,7 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 	vertShadName = vertIt->value.GetString();
 
 	Value::MemberIterator fragIt = shadersIt->value.FindMember("frag");
-	if (fragIt == shadersIt->value.MemberEnd()) throw runtime_error("sahders/frag is mandatory");
+	if (fragIt == shadersIt->value.MemberEnd()) throw runtime_error("shaders/frag is mandatory");
 	if (!fragIt->value.IsString()) throw runtime_error("frag shader must be string");
 	fragShadName = fragIt->value.GetString();
 
@@ -173,7 +176,7 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 	// fill header
 	MaterialTemplateEntryHeader* head = accessMaterialTemplate(mtid);
 	head->numSlots = numSlots;
-	head->materialSize = materialSize;
+	head->materialSize = materialSize + sizeof(MaterialEntryHeader::header);
 	ShaderProgram shaderProgram =
 		head->shaderProgram =
 		shaderPool->getShaderProgram(vertShadName, fragShadName, geomShadName);
@@ -181,6 +184,7 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 	
 	// fill slots
 	MaterialTemplateEntrySlot* slots = (MaterialTemplateEntrySlot*)(head + 1);
+	unsigned offset = 0;
 	for (unsigned i = 0; i < numSlots; i++)
 	{
 		const string& name = slotNames[i];
@@ -188,12 +192,15 @@ MaterialTemplate MaterialManager::loadMaterialTemplate(rapidjson::Document& doc)
 		strncpy(slots[i].name, slotNames[i].c_str(), maxSlotNameSize);
 
 		slots[i].type = types[i];
-
+		slots[i].offset = offset;
 		slots[i].unifLoc = shaderProgram.getUniformLocation(name.c_str());
+
+		offset += getUnifSize(types[i]);
 	}
 
 	// default values
-	nextMaterialFreeSlot[mtid] = 0;
+	nextMaterialFreeSlot.push_back(MATERIAL_CHUNK_LENGTH);
+	materialDataChunks.push_back(vector<void*>());
 	allocateNewMaterialChunk(mtid);
 
 	MaterialEntryHeader* matHead = accessMaterialData(((uint32_t)mtid) << 16);
@@ -253,14 +260,12 @@ Material MaterialManager::loadMaterial(rapidjson::Document& doc)
 	MaterialEntryHeader* matHead = accessMaterialData(mat.id);
 	char* matData = (char*)&matHead[1];
 
-	matHead->header.sharedCount = 1;
-
 	for (Value::MemberIterator it = slotsObj.MemberBegin();
 		it != slotsObj.MemberEnd();
 		++it)
 	{
 		if (!it->name.IsString()) throw runtime_error("slot names must be string");
-		string slotName = it->value.GetString();
+		string slotName = it->name.GetString();
 		uint16_t slot = nameToSlot(slotName, templHead);
 		parseJsonValueAndSet(it->value, slot, matHead, templHead);
 	}
@@ -382,7 +387,7 @@ const MaterialManager::MaterialTemplateEntryHeader* MaterialManager::accessMater
 	const unsigned chunkIndex = offset / MATERIAL_TEMPLATE_CHUNK_SIZE;
 	const unsigned chunkOffset = offset % MATERIAL_TEMPLATE_CHUNK_SIZE;
 	char* chunk = (char*)materialTemplateDataChunks[chunkIndex];
-	return (MaterialManager::MaterialTemplateEntryHeader*) chunk[offset];
+	return (MaterialManager::MaterialTemplateEntryHeader*) (&chunk[chunkOffset]);
 }
 
 MaterialManager::MaterialTemplateEntryHeader* MaterialManager::accessMaterialTemplate(std::uint16_t mtid)
@@ -431,19 +436,19 @@ const MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(
 	return accessMaterialData(mtid, mid);
 }
 
+MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint32_t id)
+{
+	uint16_t mtid = id >> 16;
+	uint16_t mid = id & 0x0000FFFF;
+	return accessMaterialData(mtid, mid);
+}
+
 MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint16_t mtid, uint16_t mid)
 {
 	return
 		const_cast<MaterialEntryHeader*>(
 				static_cast<const MaterialManager*>(this)->accessMaterialData(mtid, mid)
 		);
-}
-
-MaterialManager::MaterialEntryHeader* MaterialManager::accessMaterialData(uint32_t id)
-{
-	uint16_t mtid = id >> 16;
-	uint16_t mid = id & 0x0000FFFF;
-	return accessMaterialData(mtid, mid);
 }
 
 void MaterialManager::allocateNewMaterialChunk(uint16_t mtid)
@@ -454,20 +459,20 @@ void MaterialManager::allocateNewMaterialChunk(uint16_t mtid)
 	MaterialManager::MaterialTemplateEntryHeader* header =
 		accessMaterialTemplate(mtid);
 
-	const unsigned materialSlotSize = header->materialSize + sizeof(unsigned);
+	const unsigned materialSlotSize = header->materialSize;
+	const uint32_t chunkId = materialDataChunks[mtid].size() << 16;
 
 	char* data = new char[materialSlotSize * MATERIAL_CHUNK_LENGTH];
 	materialDataChunks[mtid].push_back(data);
 
-	const uint32_t mtid32 = mtid;
 	for (unsigned i = 0; i < MATERIAL_CHUNK_LENGTH; i++)
 	{
 		MaterialEntryHeader* header =
 			(MaterialEntryHeader*) (&data[i * materialSlotSize]);
-		header->nextFree = (mtid32 << 16) || (i + 1);
+		header->nextFree = chunkId | (i + 1);
 	}
 
-	nextMaterialFreeSlot[mtid] = mtid32 << 16;
+	nextMaterialFreeSlot[mtid] = chunkId;
 }
 
 void MaterialManager::allocateNewMaterialTemplateChunk()
@@ -479,7 +484,7 @@ void MaterialManager::allocateNewMaterialTemplateChunk()
 Material MaterialManager::duplicateMaterialAndMakeUnique(std::uint32_t id)
 {
 	const uint16_t mtid = id >> 16;
-	const uint16_t mid = id | 0xFFFF;
+	const uint16_t mid = id & 0xFFFF;
 
 	MaterialTemplateEntryHeader* templHead = accessMaterialTemplate(mtid);
 	const unsigned materialSize = templHead->materialSize;
@@ -577,13 +582,19 @@ void parseJsonArrayAndSet(
 		if (basicType == UnifType::FLOAT)
 		{
 			float* x = (float*)xdata;
-			if (!it->IsFloat())
+			if (it->IsFloat())
 			{
+				x[count] = it->GetFloat();
+			}
+			else if (it->IsInt())
+			{
+				x[count] = it->GetInt();
+			}
+			else{
 				stringstream ss;
 				ss << "[" << count << "]" + string(" must be float");
 				throw runtime_error(ss.str());
 			}
-			x[count] = it->GetFloat();
 		}
 		else if (basicType == UnifType::INT)
 		{
@@ -616,7 +627,7 @@ void parseJsonArrayAndSet(
 	}
 	if (count < n) throw runtime_error(string("too few elements"));
 
-	copy(xdata, &xdata[n], dataOutput);
+	copy(xdata, &xdata[n], (int*)dataOutput);
 }
 
 void MaterialManager::parseJsonValueAndSet(

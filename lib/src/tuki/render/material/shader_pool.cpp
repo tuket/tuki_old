@@ -47,7 +47,12 @@ ShaderProgram ShaderPool::getShaderProgram(
 		VertexShaderObject vertShad;
 		vertShad.create();
 		vertShad.loadFromFile(vertShadPath.c_str());
-		vertShad.compile();
+		try {
+			vertShad.compile();
+		}
+		catch (runtime_error e) {
+			throw runtime_error(vertShadPath + ": " + e.what());
+		}
 		vs = vertShaders.size();
 
 		vertShaders.push_back(vertShad);
@@ -64,7 +69,12 @@ ShaderProgram ShaderPool::getShaderProgram(
 		FragmentShaderObject fragShad;
 		fragShad.create();
 		fragShad.loadFromFile(fragShadPath.c_str());
-		fragShad.compile();
+		try {
+			fragShad.compile();
+		}
+		catch (runtime_error e) {
+			throw runtime_error(vertShadPath + ": " + e.what());
+		}
 		fs = fragShaders.size();
 
 		fragShaders.push_back(fragShad);
@@ -83,7 +93,12 @@ ShaderProgram ShaderPool::getShaderProgram(
 			GeometryShaderObject geomShad;
 			geomShad.create();
 			geomShad.loadFromFile(geomShadPath.c_str());
-			geomShad.compile();
+			try {
+				geomShad.compile();
+			}
+			catch (runtime_error e) {
+				throw runtime_error(geomShadPath + ": " + e.what());
+			}
 			gs = geomShaders.size();
 
 			geomShaders.push_back(geomShad);
@@ -101,12 +116,21 @@ ShaderProgram ShaderPool::getShaderProgram(
 
 	AttribInitilizers::generic(prog);
 
-	prog.link();
+	try {
+		prog.link();
+	}
+	catch (runtime_error e) {
+		throw runtime_error(
+			"link error (" +
+			vertShadPath + ", " +
+			fragShadPath + ", " +
+			geomShadPath + ")");
+	}
 
 	int progId = programs.size();
 	programs.push_back(prog);
 	shadersToProgram[{vs, fs, gs}] = progId;
-	programToShaders[progId] = { vs, fs, gs };
+	programToShaders.push_back({ vs, fs, gs });
 
 	return prog;
 }
