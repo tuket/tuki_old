@@ -10,7 +10,6 @@ using namespace glm;
 namespace SimpleMeshes
 {
 
-
 Mesh createHorizontalPlane(float width, float depth,
     unsigned widthDivisions, unsigned depthDivisions)
 {
