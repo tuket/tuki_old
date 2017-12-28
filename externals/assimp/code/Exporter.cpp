@@ -80,19 +80,12 @@ void GetPostProcessingStepInstanceList(std::vector< BaseProcess* >& out);
 // Exporter worker function prototypes. Should not be necessary to #ifndef them, it's just a prototype
 // do not use const, because some exporter need to convert the scene temporary
 void ExportSceneCollada(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneXFile(const char*,IOSystem*, const aiScene*, const ExportProperties*);
 void ExportSceneStep(const char*,IOSystem*, const aiScene*, const ExportProperties*);
 void ExportSceneObj(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneSTL(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneSTLBinary(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportScenePly(const char*,IOSystem*, const aiScene*, const ExportProperties*);
-void ExportScenePlyBinary(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportScene3DS(const char*, IOSystem*, const aiScene*, const ExportProperties*);
 void ExportSceneGLTF(const char*, IOSystem*, const aiScene*, const ExportProperties*);
 void ExportSceneGLB(const char*, IOSystem*, const aiScene*, const ExportProperties*);
 void ExportSceneAssbin(const char*, IOSystem*, const aiScene*, const ExportProperties*);
 void ExportSceneAssxml(const char*, IOSystem*, const aiScene*, const ExportProperties*);
-void ExportSceneX3D(const char*, IOSystem*, const aiScene*, const ExportProperties*);
 
 // ------------------------------------------------------------------------------------------------
 // global array of all export formats which Assimp supports in its current build
@@ -102,11 +95,6 @@ Exporter::ExportFormatEntry gExporters[] =
     Exporter::ExportFormatEntry( "collada", "COLLADA - Digital Asset Exchange Schema", "dae", &ExportSceneCollada),
 #endif
 
-#ifndef ASSIMP_BUILD_NO_X_EXPORTER
-    Exporter::ExportFormatEntry( "x", "X Files", "x", &ExportSceneXFile,
-        aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder | aiProcess_FlipUVs),
-#endif
-
 #ifndef ASSIMP_BUILD_NO_STEP_EXPORTER
     Exporter::ExportFormatEntry( "stp", "Step Files", "stp", &ExportSceneStep, 0),
 #endif
@@ -114,29 +102,6 @@ Exporter::ExportFormatEntry gExporters[] =
 #ifndef ASSIMP_BUILD_NO_OBJ_EXPORTER
     Exporter::ExportFormatEntry( "obj", "Wavefront OBJ format", "obj", &ExportSceneObj,
         aiProcess_GenSmoothNormals /*| aiProcess_PreTransformVertices */),
-#endif
-
-#ifndef ASSIMP_BUILD_NO_STL_EXPORTER
-    Exporter::ExportFormatEntry( "stl", "Stereolithography", "stl" , &ExportSceneSTL,
-        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_PreTransformVertices
-    ),
-    Exporter::ExportFormatEntry( "stlb", "Stereolithography (binary)", "stl" , &ExportSceneSTLBinary,
-        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_PreTransformVertices
-    ),
-#endif
-
-#ifndef ASSIMP_BUILD_NO_PLY_EXPORTER
-    Exporter::ExportFormatEntry( "ply", "Stanford Polygon Library", "ply" , &ExportScenePly,
-        aiProcess_PreTransformVertices
-    ),
-    Exporter::ExportFormatEntry( "plyb", "Stanford Polygon Library (binary)", "ply", &ExportScenePlyBinary,
-        aiProcess_PreTransformVertices
-    ),
-#endif
-
-#ifndef ASSIMP_BUILD_NO_3DS_EXPORTER
-    Exporter::ExportFormatEntry( "3ds", "Autodesk 3DS (legacy)", "3ds" , &ExportScene3DS,
-        aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices),
 #endif
 
 #ifndef ASSIMP_BUILD_NO_GLTF_EXPORTER
@@ -152,10 +117,6 @@ Exporter::ExportFormatEntry gExporters[] =
 
 #ifndef ASSIMP_BUILD_NO_ASSXML_EXPORTER
     Exporter::ExportFormatEntry( "assxml", "Assxml Document", "assxml" , &ExportSceneAssxml, 0),
-#endif
-
-#ifndef ASSIMP_BUILD_NO_X3D_EXPORTER
-	Exporter::ExportFormatEntry( "x3d", "Extensible 3D", "x3d" , &ExportSceneX3D, 0),
 #endif
 };
 

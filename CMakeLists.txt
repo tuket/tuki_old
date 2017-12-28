@@ -41,6 +41,10 @@ set(ENABLE_BOOST_WORKAROUND ON)
 option(ASSIMP_BUILD_STATIC_LIB ON)
 add_subdirectory("externals/assimp")
 
+# bullet
+OPTION(BUILD_BULLET3 "Set when you want to build Bullet 3" OFF)
+add_subdirectory("externals/bullet")
+
 
 set(INCLUDE_DIRS
 	"externals/SDL2/include"
@@ -50,6 +54,8 @@ set(INCLUDE_DIRS
 	"externals/glad/include"
 	"externals/assimp/include"
 	"externals/rapidjson"
+	"externals/cereal"
+	"externals/bullet/src"
 	
 	"lib"
 )
