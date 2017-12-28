@@ -131,7 +131,7 @@ public:
 	static void uploadUniform(int location, const glm::mat4x3& value);
 	static void uploadUniform(int location, TextureUnit value);
 	template <typename T>
-	static void uploadUniform(const char* name, const T& value)
+	void uploadUniform(const char* name, const T& value)
 	{
 		int loc = getUniformLocation(name);
 		useProgram();

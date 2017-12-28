@@ -655,7 +655,7 @@ void MaterialManager::parseJsonValueAndSet(
 	{
 		if(!val.IsInt()) throw runtime_error(templSlots[slot].name + string(" must be int"));
 
-		int x[1] = { val.GetFloat() };
+		int x[1] = { val.GetInt() };
 		copy(x, &x[1], data);
 	}
 	else if (type == UnifType::UINT)

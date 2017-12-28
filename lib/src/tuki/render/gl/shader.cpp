@@ -66,7 +66,7 @@ UnifType getUnifBasicType(UnifType ut)
 const char* getUnifTypeName(UnifType ut)
 {
 	const unsigned n = (unsigned)UnifType::COUNT;
-	const char const* lookUpTable[n] =
+	const char * const lookUpTable[n] =
 	{
 		"float", "vec2", "vec3", "vec4",
 		"int", "ivec2", "ivec3", "ivec4",
