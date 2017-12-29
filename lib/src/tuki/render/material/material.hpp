@@ -146,7 +146,7 @@ private:
 	};
 	struct MaterialTemplateEntrySlot	// < sorted by name!
 	{
-		static const unsigned NAME_MAX_SIZE = 24;
+		static const unsigned NAME_MAX_SIZE = 26;
 		UnifType type;		// type of the uniform
 		std::uint16_t unifLoc;	// uniform location
 		std::uint16_t offset;	// offset within the material

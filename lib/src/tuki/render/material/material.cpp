@@ -269,6 +269,7 @@ Material MaterialManager::loadMaterial(rapidjson::Document& doc)
 		uint16_t slot = nameToSlot(slotName, templHead);
 		parseJsonValueAndSet(it->value, slot, matHead, templHead);
 	}
+	return mat;
 }
 
 Material MaterialManager::createMaterial(MaterialTemplate materialTemplate)
@@ -465,11 +466,16 @@ void MaterialManager::allocateNewMaterialChunk(uint16_t mtid)
 	char* data = new char[materialSlotSize * MATERIAL_CHUNK_LENGTH];
 	materialDataChunks[mtid].push_back(data);
 
-	for (unsigned i = 0; i < MATERIAL_CHUNK_LENGTH; i++)
+	for (unsigned i = 0; i < MATERIAL_CHUNK_LENGTH-1; i++)
 	{
 		MaterialEntryHeader* header =
 			(MaterialEntryHeader*) (&data[i * materialSlotSize]);
 		header->nextFree = chunkId | (i + 1);
+	}
+	{
+		MaterialEntryHeader* header =
+			(MaterialEntryHeader*)(&data[(MATERIAL_CHUNK_LENGTH-1) * materialSlotSize]);
+		header->nextFree = 0;
 	}
 
 	nextMaterialFreeSlot[mtid] = chunkId;
