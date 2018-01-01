@@ -28,6 +28,12 @@ string MaterialTemplate::getName()const
 	return man->getMaterialTemplateName(*this);
 }
 
+ShaderProgram MaterialTemplate::getShaderProg()const
+{
+	MaterialManager* man = MaterialManager::getSingleton();
+	return man->getMaterialTemplateShaderProgram(*this);
+}
+
 void MaterialTemplate::bindProgram()
 {
 	MaterialManager* man = MaterialManager::getSingleton();
@@ -41,6 +47,12 @@ Material::Material(MaterialTemplate materialTemplate)
 	MaterialManager* man = MaterialManager::getSingleton();
 	Material mat = man->createMaterial(materialTemplate);
 	id = mat.id;
+}
+
+ShaderProgram Material::getShaderProg()const
+{
+	MaterialManager* man = MaterialManager::getSingleton();
+	return man->getMaterialShaderProgram(*this);
 }
 
 void Material::use()
@@ -74,6 +86,22 @@ MaterialManager::MaterialManager()
 	// fist allocation
 	allocateNewMaterialTemplateChunk();
 	nextMaterialTemplateOffset = 0;
+}
+
+ShaderProgram MaterialManager::getMaterialTemplateShaderProgram(uint16_t mtid)const
+{
+	const MaterialTemplateEntryHeader* head = accessMaterialTemplate(mtid);
+	return head->shaderProgram;
+}
+
+ShaderProgram MaterialManager::getMaterialTemplateShaderProgram(MaterialTemplate materialTemplate)const
+{
+	return getMaterialTemplateShaderProgram(materialTemplate.getId());
+}
+
+ShaderProgram MaterialManager::getMaterialShaderProgram(Material material)const
+{
+	return getMaterialTemplateShaderProgram(material.getTemplateId());
 }
 
 MaterialTemplate MaterialManager::loadMaterialTemplate(const string& path)

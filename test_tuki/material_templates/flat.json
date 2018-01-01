@@ -1,8 +1,8 @@
 {
 	"shaders":
 	{
-		"vert": "shaders/uv_quad.vs",
-		"frag": "shaders/flat.fs"
+		"vert": "shaders/simple.vs",
+		"frag": "shaders/dl_shade.fs"
 	},
 	"slots":
 	{

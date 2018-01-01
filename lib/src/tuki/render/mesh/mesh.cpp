@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <cstring>
 #include <cassert>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <vector>
+
+using namespace std;
 
 void Mesh::initVertexData
 (
@@ -50,8 +56,8 @@ const float* Mesh::getAttribData(AttribLocation index)const
 		case AttribLocation::POS:		 dataPtr = positions; break;
 		case AttribLocation::NORMAL:	 dataPtr = normals; break;
 		case AttribLocation::TANGENT:	 dataPtr = tangents; break;
-		case AttribLocation::COLOR:	 dataPtr = colors; break;
-		case AttribLocation::TEX_COORD: dataPtr = texCoords; break;
+		case AttribLocation::COLOR:		 dataPtr = colors; break;
+		case AttribLocation::TEX_COORD:  dataPtr = texCoords; break;
 	}
 	return dataPtr;
 }
@@ -65,3 +71,107 @@ void Mesh::free()
 	delete[] texCoords;
 	delete[] triangles;
 };
+
+Mesh Mesh::load(const string& fileName)
+{
+	Assimp::Importer importer;
+	
+	const aiScene* scene =
+		importer.ReadFile(fileName,
+			aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
+
+	if (!scene)
+	{
+		throw runtime_error("could not load " + fileName);
+	}
+
+	if (!scene->HasMeshes())
+	{
+		throw runtime_error("there are no meshes in " + fileName);
+	}
+
+	aiMesh* mesh = scene->mMeshes[0];
+	const unsigned nv = mesh->mNumVertices;
+	const unsigned nt = mesh->mNumFaces;
+
+	if (!mesh->HasPositions())
+	{
+		throw runtime_error("the mesh doesn't have any positions (" + fileName + ")");
+	}
+	
+	Mesh res;
+	res.numVertices = nv;
+	res.numTriangles = nt;
+	
+	float* positions = new float[3 * nv];
+	for (int i = 0; i < nv; i++)
+	for (int j = 0; j < 3; j++)
+	{
+		positions[3 * i + j] = mesh->mVertices[i][j];
+	}
+
+	float* normals = nullptr;
+	if (mesh->HasNormals())
+	{
+		normals = new float[3 * nv];
+		for (int i = 0; i < nv; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			normals[3 * i + j] = mesh->mNormals[i][j];
+		}
+	}
+
+	float* tangents = nullptr;
+	if (mesh->HasTangentsAndBitangents())
+	{
+		tangents = new float[3 * nv];
+		for (int i = 0; i < nv; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			tangents[3 * i + j] = mesh->mTangents[i][j];
+		}
+	}
+
+	float* colors = nullptr;
+	if (mesh->HasVertexColors(0))
+	{
+		colors = new float[3 * nv];
+		for (int i = 0; i < nv; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			colors[3 * i + j] = mesh->mColors[0][i][j];
+		}
+	}
+
+	float* texCoords = nullptr;
+	if (mesh->HasTextureCoords(0))
+	{
+		texCoords = new float[2 * nv];
+		for (int i = 0; i < nv; i++)
+		for (int j = 0; j < 2; j++)
+		{
+			texCoords[2 * i + j] = mesh->mTextureCoords[0][i][j];
+		}
+	}
+
+	unsigned* indices = nullptr;
+	if (!mesh->HasFaces())
+	{
+		throw runtime_error("mesh doesn't have faces(" + fileName + ")");
+	}
+	indices = new unsigned[3 * nt];
+	for (int i = 0; i < nt; i++)
+	for (int j = 0; j < 3; j++)
+	{
+		indices[3 * i + j] = mesh->mFaces[i].mIndices[j];
+	}
+
+	res.positions = positions;
+	res.normals = normals;
+	res.tangents = tangents;
+	res.colors = colors;
+	res.texCoords = texCoords;
+	res.triangles = indices;
+
+	return res;
+}

@@ -21,7 +21,7 @@ void main()
 
     vec4 pos = modelViewProjMat * vec4(attribPos, 1);
     varPos = pos.xyz / pos.w;
-    varNormal = normalMat * varNormal;
+    varNormal = normalMat * attribNormal;
     varTexCoord = attribTexCoord;
 
     gl_Position = pos;

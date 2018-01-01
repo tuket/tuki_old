@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../gl/attribs.hpp"
+#include <string>
 
 enum class GeomType
 {
@@ -31,6 +32,8 @@ public:
 class Mesh : public IMesh
 {	
 public:
+	static Mesh load(const std::string& fileName);
+
 	Mesh()
 	{
 		numVertices = numTriangles = 0;

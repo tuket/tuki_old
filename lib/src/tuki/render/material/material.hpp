@@ -25,6 +25,7 @@ public:
 
 	std::uint16_t getId()const;
 	std::string getName()const;
+	ShaderProgram getShaderProg()const;
 
 	void bindProgram();
 
@@ -50,6 +51,7 @@ public:
 	std::uint16_t getTemplateId()const { return id >> 16; }
 	std::uint16_t getInstanceId()const { return id & 0x0000FFFF; }
 	std::uint32_t getId()const { return id; }
+	ShaderProgram getShaderProg()const;
 
 	template <typename T>
 	void setValue(unsigned slot, T val);
@@ -77,6 +79,9 @@ private:
 class MaterialManager : public Singleton<MaterialManager>
 {
 public:
+	
+	ShaderProgram getMaterialTemplateShaderProgram(MaterialTemplate materialTemplate)const;
+	ShaderProgram getMaterialShaderProgram(Material material)const;
 
 	// get the material template if loaded, pthorwise the id will be -1
 	MaterialTemplate getMaterialTemplate(const std::string& path)const;
@@ -172,6 +177,8 @@ private:
 	// FUNCTIONS //
 	friend class Singleton<MaterialManager>;
 	MaterialManager();
+
+	ShaderProgram getMaterialTemplateShaderProgram(std::uint16_t mtid)const;
 
 	MaterialTemplate loadMaterialTemplate(rapidjson::Document& doc);
 	Material loadMaterial(rapidjson::Document& doc);

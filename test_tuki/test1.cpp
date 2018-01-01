@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <tuki/render/gl/render.hpp>
 #include <tuki/render/material/material.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace std;
 
@@ -59,8 +60,9 @@ int main(int argc, char** argv)
 		cout << e.what() << endl;
 	}
 
-	UvPlaneMeshGpu uvPlane;
-	uvPlane.load();
+	Mesh mesh = Mesh::load("mesh/monkey.obj");
+	MeshGpuGeneric meshGpu;
+	meshGpu.load(mesh);
 
 	static float prevTime = (float)SDL_GetTicks();
 	static float curTime = (float)SDL_GetTicks();
@@ -84,9 +86,21 @@ int main(int argc, char** argv)
 		
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		ShaderProgram shaderProg = material.getShaderProg();
+		glm::mat4 modelMat = glm::mat4(1);
+		glm::mat4 viewMat = glm::translate(glm::mat4(), glm::vec3(0, 0, -2));
+		glm::mat4 projMat = glm::ortho(-2.f, 2.f, -2.f, 2.f, 0.05f, 500.f);
+		glm::mat4 modelViewMat = viewMat * modelMat;
+		glm::mat4 modelViewProj = projMat * modelViewMat;
+		glm::mat3 normalMat = glm::inverse(glm::transpose(modelViewMat));
+		shaderProg.uploadUniform("modelViewProjMat", modelViewProj);
+		shaderProg.uploadUniform("modelMat", modelMat);
+		shaderProg.uploadUniform("modelViewMat", modelViewMat);
+		shaderProg.uploadUniform("normalMat", normalMat);
+		shaderProg.uploadUniform("L", glm::vec3(0, 0, 1));
 		material.use();
-		uvPlane.bind();
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		meshGpu.bind();
+		glDrawElements(GL_TRIANGLES, meshGpu.getNumElements(), GL_UNSIGNED_INT, 0);
 
 		SDL_GL_SwapWindow(window);
 

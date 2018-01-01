@@ -37,6 +37,7 @@ set("asset_dirs"
 	"material_templates"
 	"materials"
 	"config"
+	"mesh"
 )
 
 foreach(dir ${asset_dirs})
