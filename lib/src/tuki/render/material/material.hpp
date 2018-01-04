@@ -83,7 +83,7 @@ public:
 	ShaderProgram getMaterialTemplateShaderProgram(MaterialTemplate materialTemplate)const;
 	ShaderProgram getMaterialShaderProgram(Material material)const;
 
-	// get the material template if loaded, pthorwise the id will be -1
+	// get the material template if loaded, otherwise the id will be -1
 	MaterialTemplate getMaterialTemplate(const std::string& path)const;
 
 	// load the material file from a file, if has been already loaded returns the same object

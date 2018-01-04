@@ -26,6 +26,7 @@ namespace RenderApi
 
 	void setClearColor(float r, float g, float b);
 	void setClearColor(float r, float g, float b, float a);
+	void setClearDepth(float depth);
 
 	void enableDepthTest(bool yes);
 
