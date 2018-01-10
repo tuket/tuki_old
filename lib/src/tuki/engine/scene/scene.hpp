@@ -18,4 +18,7 @@ private:
 
 	void addDirty(const SceneNode* node);
 	void removeDirty(const SceneNode* node);
+
+private:
+	std::set<const SceneNode*> dirtyNodes;
 };

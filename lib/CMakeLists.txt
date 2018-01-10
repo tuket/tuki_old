@@ -43,6 +43,16 @@ set(SRC_UTIL
 	"multi_sort.hpp"
 )
 
+set(SRC_ENGINE_SCENE
+	"scene.hpp" "scene.cpp"
+	"scene_node.hpp" "scene_node.cpp"
+)
+
+set(SRC_ENGINE_SCENE_COMPONENT
+	"component.hpp"
+	"mesh_component.hpp"
+)
+
 # ----------------------------------------------------
 # ADD _LIBRARY
 # ----------------------------------------------------
@@ -51,12 +61,16 @@ PREPEND(SRC_RENDER_GL "src/tuki/render/gl" ${SRC_RENDER_GL})
 PREPEND(SRC_RENDER_MATERIAL "src/tuki/render/material" ${SRC_RENDER_MATERIAL})
 PREPEND(SRC_RENDER_MESH "src/tuki/render/mesh" ${SRC_RENDER_MESH})
 PREPEND(SRC_UTIL "src/tuki/util" ${SRC_UTIL})
+PREPEND(SRC_ENGINE_SCENE "src/tuki/engine/scene" ${SRC_ENGINE_SCENE})
+PREPEND(SRC_ENGINE_SCENE_COMPONENT "src/tuki/engine/scene/component" ${SRC_ENGINE_SCENE_COMPONENT})
 
 add_library(${PROJ_NAME}
 	${SRC_RENDER_GL}
 	${SRC_RENDER_MATERIAL}
 	${SRC_RENDER_MESH}
 	${SRC_UTIL}
+	${SRC_ENGINE_SCENE}
+	${SRC_ENGINE_SCENE_COMPONENT}
 )
 
 # ----------------------------------------------------
@@ -90,6 +104,9 @@ source_group("render\\gl" FILES ${SRC_RENDER_GL})
 source_group("render\\material" FILES ${SRC_RENDER_MATERIAL})
 source_group("render\\mesh" FILES ${SRC_RENDER_MESH})
 source_group("util" FILES ${SRC_UTIL})
+source_group("engine\\scene" FILES ${SRC_ENGINE_SCENE})
+source_group("engine\\scene\\component" FILES ${SRC_ENGINE_SCENE_COMPONENT})
+
 
 # ----------------------------------------------------
 # Copy assets to the build directory

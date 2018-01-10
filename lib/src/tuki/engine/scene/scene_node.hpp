@@ -26,6 +26,7 @@ public:
 	template <class ComponentType>
 	ComponentType& getComponent()const;
 
+
 	const Transform& getTransform()const { return trans; }
 	void setTransform(const Transform& trans) { this->trans = trans; setDirty(); }
 	const glm::vec3& getPosition()const { return trans.pos; }
