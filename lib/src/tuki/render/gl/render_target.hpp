@@ -1,53 +1,31 @@
 #pragma once
 
-#include "texture.hpp"
+class FrameBuffer;
 
-#include <vector>
-
-class RenderTarget
+// region in a frame buffer
+struct RenderTarget
 {
-public:
-	RenderTarget(
-		unsigned numTextures = 0,
-		unsigned width = 0, unsigned height = 0,
-		TexelFormat texelFormat = TexelFormat::RGBA8,	// all textures have the same texel format
-		bool depthTex = false
-	);
-
-	RenderTarget(
-		unsigned numTextures,
-		unsigned width, unsigned height,
-		const TexelFormat* texelFormats,	// array of texel formats for each texture
-		bool depthTex = false
-	);
-
-	Texture getTexture(unsigned slot)const;
-	TextureId getTextureId(unsigned slot)const;
-	TextureId getDepthTextureId()const;
-	unsigned getNumTextures()const;
-	bool hasDepthTexture()const { return depthTexture.getId() >= 0; }
-
-	void resize(unsigned width, unsigned height);
+	RenderTarget(FrameBuffer* frameBuffer) : frameBuffer(frameBuffer) {}
 
 	void bind();
-	
-	void clear();
 
-	unsigned getWidth()const { return width; }
-	unsigned getHeight()const { return height; }
+	FrameBuffer* frameBuffer;
 
-	static const unsigned MAX_NUM_TEXTURES = 16;
-
-private:
-
-	std::vector<TexelFormat> texelFormats;
-	std::vector<Texture> textures;
-	Texture depthTexture;
-	unsigned fbo;
-
-	unsigned width, height;
-
-public:
-	static void bindDefault();
-	static void clearDefault();
+	bool percentDefined;	// if true, defines the region as percentage, else: as number of texels
+	union {
+		float percent;
+		unsigned texels;
+	} x;
+	union {
+		float percent;
+		unsigned texels;
+	} w;
+	union {
+		float percent;
+		unsigned texels;
+	} y;
+	union {
+		float percent;
+		unsigned texels;
+	} h;
 };

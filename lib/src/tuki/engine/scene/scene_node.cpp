@@ -5,6 +5,64 @@
 using namespace std;
 using namespace glm;
 
+IComponent* SceneNode::getComponent(ComponentType type)const
+{
+	for (IComponent* comp : components)
+	{
+		if (comp->getComponentType() == type)
+			return comp;
+	}
+	return nullptr;
+}
+
+vector<IComponent*> SceneNode::getComponents(ComponentType type) const
+{
+	vector<IComponent*> res;
+	int n = 0;
+	for (IComponent* comp : components)
+	{
+		if (comp->getComponentType() == type) n++;
+	}
+	res.reserve(n);
+	for (IComponent* comp : components)
+	{
+		if (comp->getComponentType() == type) res.push_back(comp);
+	}
+	return res;
+}
+
+void SceneNode::attachComponent(IComponent* component)
+{
+	components.push_back(component);
+}
+
+void SceneNode::attachChild(SceneNode* child)
+{
+	if (nameToChild.find(child->name) != nameToChild.end())
+		throw runtime_error("can't attach child: there is a child with that name already");
+
+	children.push_back(child);
+	child->parent = this;
+	nameToChild[child->name] = child;
+}
+
+std::string SceneNode::getName()const
+{
+	return name;
+}
+
+void SceneNode::setName(const std::string& newName)
+{
+	if (newName == name) return;
+	auto it = parent->nameToChild.find(newName);
+	if (it != parent->nameToChild.end())
+		throw runtime_error("can't change child name: there is a child with that name already");
+
+	parent->nameToChild.erase(it);
+	parent->nameToChild[newName] = this;
+	name = newName;
+}
+
 const mat4& SceneNode::getTransformMatrix()const
 {
 	if (dirtyFlag)

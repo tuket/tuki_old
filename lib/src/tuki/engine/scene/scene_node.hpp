@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "component/component.hpp"
 
 class IMeshGpu;
 class Scene;
@@ -23,9 +24,25 @@ public:
 	const std::vector<SceneNode*>& getChidren()const { return children; }
 	Scene* getScene()const { return scene; }
 
-	template <class ComponentType>
-	ComponentType& getComponent()const;
+	IComponent* getComponent(ComponentType type)const;
+	template <class T>
+	T* getComponent() const
+	{
+		return static_cast<T*>(getComponent(T::getComponentTypeStatic()));
+	}
 
+	std::vector<IComponent*> getComponents(ComponentType type) const;
+	template <class T>
+	std::vector<T*> getComponents() const
+	{
+		return static_cast<std::vector<T*>>(getComponent(T::getComponentTypeStatic()));
+	}
+
+	void attachComponent(IComponent* component);
+	void attachChild(SceneNode* child);
+
+	std::string getName()const;
+	void setName(const std::string& newName);
 
 	const Transform& getTransform()const { return trans; }
 	void setTransform(const Transform& trans) { this->trans = trans; setDirty(); }
@@ -42,7 +59,7 @@ public:
 
 private:
 
-	SceneNode() : parent(nullptr), id(-1), scene(nullptr) {}
+	SceneNode() : parent(nullptr), id(-1), scene(nullptr) { components.reserve(4); }
 	int id;
 	std::string name;
 	Transform trans;
@@ -53,6 +70,7 @@ private:
 	SceneNode* parent;
 	std::vector<SceneNode*> children;
 	std::map<std::string, SceneNode*> nameToChild;
+	std::vector<IComponent*> components;
 
 	// COMPONENTS
 	IMeshGpu* meshGpu;

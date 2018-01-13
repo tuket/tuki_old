@@ -6,8 +6,9 @@ class IMeshGpu;
 
 class MeshComponent : public IComponent
 {
-public:
-
-private:
+	friend class GraphicsSystem;
 	IMeshGpu* meshGpu;
+public:
+	ComponentType getComponentType()const { return ComponentType::MeshComponent; }
+	static ComponentType getComponentTypeStatic() { return ComponentType::MeshComponent; }
 };

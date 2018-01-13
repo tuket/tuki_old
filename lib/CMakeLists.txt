@@ -22,6 +22,7 @@ set(SRC_RENDER_GL
 	"attrib_initializers.hpp" "attrib_initializers.cpp"
 	"shader.hpp" "shader.cpp"
 	"texture.hpp" "texture.cpp"
+	"frame_buffer.hpp" "frame_buffer.cpp"
 	"render_target.hpp" "render_target.cpp"
 	"util.hpp" "util.cpp"
 	"render.hpp" "render.cpp"
@@ -51,6 +52,13 @@ set(SRC_ENGINE_SCENE
 set(SRC_ENGINE_SCENE_COMPONENT
 	"component.hpp"
 	"mesh_component.hpp"
+	"material_component.hpp"
+	"point_light_component.hpp"
+)
+
+set(SRC_ENGINE_GRAPHICS
+	"graphics_system.hpp"
+	"renderer_3d.hpp"
 )
 
 # ----------------------------------------------------
@@ -63,6 +71,7 @@ PREPEND(SRC_RENDER_MESH "src/tuki/render/mesh" ${SRC_RENDER_MESH})
 PREPEND(SRC_UTIL "src/tuki/util" ${SRC_UTIL})
 PREPEND(SRC_ENGINE_SCENE "src/tuki/engine/scene" ${SRC_ENGINE_SCENE})
 PREPEND(SRC_ENGINE_SCENE_COMPONENT "src/tuki/engine/scene/component" ${SRC_ENGINE_SCENE_COMPONENT})
+PREPEND(SRC_ENGINE_GRAPHICS "src/tuki/engine/graphics" ${SRC_ENGINE_GRAPHICS})
 
 add_library(${PROJ_NAME}
 	${SRC_RENDER_GL}
@@ -71,6 +80,7 @@ add_library(${PROJ_NAME}
 	${SRC_UTIL}
 	${SRC_ENGINE_SCENE}
 	${SRC_ENGINE_SCENE_COMPONENT}
+	${SRC_ENGINE_GRAPHICS}
 )
 
 # ----------------------------------------------------
@@ -106,6 +116,7 @@ source_group("render\\mesh" FILES ${SRC_RENDER_MESH})
 source_group("util" FILES ${SRC_UTIL})
 source_group("engine\\scene" FILES ${SRC_ENGINE_SCENE})
 source_group("engine\\scene\\component" FILES ${SRC_ENGINE_SCENE_COMPONENT})
+source_group("engine\\graphics" FILES ${SRC_ENGINE_GRAPHICS})
 
 
 # ----------------------------------------------------
