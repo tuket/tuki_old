@@ -7,7 +7,7 @@
 typedef int Vao;
 typedef int Vbo;
 
-struct VboSetFull
+struct VboSet
 {
 	Vbo attribs[(int)AttribLocation::NUM_ATTRIBS];
 	// triangle indices
@@ -17,62 +17,29 @@ struct VboSetFull
 // MESH IN THE GPU
 
 // abstract class for the many types of possible meshes in gpu
-class IMeshGpu
-{
-public:
-	virtual bool hasIndices()const = 0;
-	virtual GeomType getGeomType()const = 0;
-	virtual AttribBitMask getAttribBitMask()const = 0;
-	virtual AttribInitilizer getAttribInitializer()const { return AttribInitilizers::generic; }
-
-	virtual unsigned getNumElements()const = 0;
-
-	void bind()const;
-
-	// upload mesh from RAM to VRAM
-	virtual void load(const IMesh& mesh) {};
-
-	// fre GPU memory
-	virtual void free() = 0;
-
-protected:
-	Vao vao;
-};
-
-// can be used for any type of triangle mesh configuration
-// for better performance inherit from IMesh and make a more specific implementation
-class MeshGpuGeneric : public IMeshGpu
+class MeshGpu
 {
 public:
 	bool hasIndices()const { return vboSet.indices >= 0; }
-	GeomType getGeomType()const { return GeomType::TRIANGLES; }
+	GeomType getGeomType()const { return geomType; }
 	AttribBitMask getAttribBitMask()const { return attribBitMask; }
+	AttribInitilizer getAttribInitializer()const { return AttribInitilizers::generic; }
+	unsigned getNumElements()const { return numElements; }
 
-	unsigned getNumElements()const;
+	void bind()const;
 
-	void load(const IMesh& mesh);
+	// fre GPU memory
 	void free();
 
+	static void initScreenQuad(MeshGpu& out);
+	static void initFromMesh(MeshGpu& out, const IMesh& mesh);
+
 protected:
-	VboSetFull vboSet;
+	Vao vao;
+	VboSet vboSet;
 	AttribBitMask attribBitMask;
+	GeomType geomType = GeomType::TRIANGLES;
 	unsigned numElements;
-};
-
-class UvPlaneMeshGpu : public IMeshGpu
-{
-public:
-	bool hasIndices()const { return false; }
-	GeomType getGeomType()const { return GeomType::TRIANGLE_STRIP; }
-	AttribBitMask getAttribBitMask()const { return AttribBitMask::TEX_COORD; }
-
-	unsigned getNumElements()const { return 4; }
-
-	void load();
-	void free();
-
-protected:
-	Vbo vbo;
 };
 
 // free GPU memory
@@ -80,4 +47,4 @@ void freeVao(Vao vao);
 void freeVbo(Vbo vbo);
 void freeVaos(const Vao* vaos, unsigned num);
 void freeVbos(const Vbo* vbos, unsigned num);
-void freeVboSet(const VboSetFull& vboSet);
+void freeVboSet(const VboSet& vboSet);

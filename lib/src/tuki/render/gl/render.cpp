@@ -5,6 +5,7 @@
 #include "../mesh/mesh.hpp"
 #include "mesh_gpu.hpp"
 #include <iostream>
+#include "blend.hpp"
 #include <SDL.h>
 
 using namespace std;
@@ -64,7 +65,7 @@ void init()
 	
 }
 
-void draw(const IMeshGpu& mesh)
+void draw(const MeshGpu& mesh)
 {
 	const unsigned numElements = mesh.getNumElements();
 	GeomType geomType = mesh.getGeomType();
@@ -114,6 +115,30 @@ void enableFaceCulling(bool yes)
 {
 	if (yes) glEnable(GL_CULL_FACE);
 	else	 glDisable(GL_CULL_FACE);
+}
+
+void enableBlend(bool yes)
+{
+	if(yes) glEnable(GL_BLEND);
+	else glDisable(GL_BLEND);
+}
+void enableBlend(int i, bool yes)
+{
+	if (yes) glEnablei(GL_BLEND, i);
+	else glDisablei(GL_BLEND, i);
+}
+void enableBlend(std::vector<bool>& yes)
+{
+	for (unsigned i = 0; i < yes.size(); i++)
+	{
+		if (yes[i]) glEnablei(GL_BLEND, i);
+		else glDisablei(GL_BLEND, i);
+	}
+}
+
+void setBlendEquations(const BlendEquationRGB& rgb, const BlendEquationAlpha& alpha)
+{
+	setGraphicsApiBlendEquations(rgb, alpha);
 }
 
 void setPolygonDrawMode(PolygonDrawMode mode)

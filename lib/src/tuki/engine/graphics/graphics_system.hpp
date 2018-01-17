@@ -4,6 +4,7 @@
 #include "../scene/component/material_component.hpp"
 #include "../scene/component/point_light_component.hpp"
 #include <vector>
+#include <string>
 
 class Renderer3D;
 
@@ -25,6 +26,7 @@ private:
 private:
 	GraphicsSystem();
 
+	MeshComponent* createMeshComponent(const std::string& name);
 
 	
 };

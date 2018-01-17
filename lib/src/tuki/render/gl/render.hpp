@@ -5,6 +5,7 @@
 #include "render_target.hpp"
 #include "texture.hpp"
 #include "shader.hpp"
+#include <vector>
 
 enum class PolygonDrawMode
 {
@@ -14,6 +15,8 @@ enum class PolygonDrawMode
 };
 
 struct SDL_Window;
+struct BlendEquationRGB;
+class BlendEquationAlpha;
 
 namespace RenderApi
 {
@@ -22,7 +25,7 @@ namespace RenderApi
 		unsigned xPos, unsigned yPos,
 		unsigned width, unsigned height);
 
-	void draw(const IMeshGpu& mesh);
+	void draw(const MeshGpu& mesh);
 
 	void setClearColor(float r, float g, float b);
 	void setClearColor(float r, float g, float b, float a);
@@ -31,6 +34,12 @@ namespace RenderApi
 	void enableDepthTest(bool yes);
 
 	void enableFaceCulling(bool yes);
+
+	void enableBlend(bool yes);
+	void enableBlend(int i, bool yes);
+	void enableBlend(std::vector<bool>& yes);
+
+	void setBlendEquations(const BlendEquationRGB& rgb, const BlendEquationAlpha& alpha);
 
 	void setPolygonDrawMode(PolygonDrawMode mode);
 

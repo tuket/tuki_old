@@ -46,6 +46,20 @@ void SceneNode::attachChild(SceneNode* child)
 	nameToChild[child->name] = child;
 }
 
+void SceneNode::unattachChild(SceneNode* child)
+{
+	for (auto it = children.begin(); it != children.end(); ++it)
+	{
+		if (*it == child)
+		{
+			children.erase(it);
+			child->parent = nullptr;
+			return;
+		}
+	}
+	throw runtime_error("can't unattach child: it is not among children");
+}
+
 std::string SceneNode::getName()const
 {
 	return name;
@@ -91,6 +105,19 @@ const quat SceneNode::getGlobalRotation()const
 	return quat_cast(globalTransMat);
 }
 
+void SceneNode::destroy()
+{
+	if (parent)
+	{
+		auto it = parent->children.begin();
+		while (it != parent->children.end()) ++it;
+		assert(it == parent->children.end() && "parent doesn't have this child");
+		parent->children.erase(it);
+	}
+	delete this;
+}
+
+// PRIVATE
 bool SceneNode::hasDirtyParent()const
 {
 	bool res = false;

@@ -30,25 +30,28 @@ inline void setVertexIndices(Vbo vbo, unsigned numInds, const void* data)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numInds * sizeof(unsigned), data, GL_STATIC_DRAW);
 }
 
-void IMeshGpu::bind()const
+void MeshGpu::bind()const
 {
 	glBindVertexArray(vao);
 }
 
-unsigned MeshGpuGeneric::getNumElements()const
+void MeshGpu::free()
 {
-	return numElements;
+	freeVao(vao);
+	freeVboSet(vboSet);
 }
 
-void MeshGpuGeneric::load(const IMesh& mesh)
+void MeshGpu::initFromMesh(MeshGpu& out, const IMesh& mesh)
 {
-	glGenVertexArrays(1, (GLuint*)&vao);
-	glBindVertexArray(vao);
+	out.geomType = mesh.getGeomType();
+
+	glGenVertexArrays(1, (GLuint*)&out.vao);
+	glBindVertexArray(out.vao);
 
 	const unsigned nv = mesh.getNumVertices();
 	const unsigned ni = mesh.getNumIndices();
 
-	attribBitMask = AttribBitMask::NONE;
+	out.attribBitMask = AttribBitMask::NONE;
 
 	// vertex attributes
 	for (unsigned i = 0; i < (unsigned)AttribLocation::NUM_ATTRIBS; i++)
@@ -56,43 +59,37 @@ void MeshGpuGeneric::load(const IMesh& mesh)
 		AttribLocation curAttrib = (AttribLocation)i;
 		if (mesh.hasAttribData((AttribLocation)i))
 		{
-			attribBitMask |= (AttribBitMask)(1 << i);
+			out.attribBitMask |= (AttribBitMask)(1 << i);
 			const unsigned numComp = ATTRIB_NUM_COMPONENTS[i];
 			const void* data = mesh.getAttribData(curAttrib);
-			glGenBuffers(1, (GLuint*)&vboSet.attribs[i]);
-			setVertexAttrib(i, vboSet.attribs[i], nv, numComp, data);
+			glGenBuffers(1, (GLuint*)&out.vboSet.attribs[i]);
+			setVertexAttrib(i, out.vboSet.attribs[i], nv, numComp, data);
 		}
 		else
 		{
 			// it's important to set the vbo to 0, oterwise if there is garbage
 			// when deleting the vbo we could be deleting unwanted vbos
-			vboSet.attribs[i] = 0;
+			out.vboSet.attribs[i] = 0;
 		}
 	}
 
 	// elements
 	if (mesh.hasIndices())
 	{
-		glGenBuffers(1, (GLuint*)&vboSet.indices);
-		setVertexIndices(vboSet.indices, ni, (void*)mesh.getIndices());
-		numElements = mesh.getNumIndices();
+		glGenBuffers(1, (GLuint*)&out.vboSet.indices);
+		setVertexIndices(out.vboSet.indices, ni, (void*)mesh.getIndices());
+		out.numElements = mesh.getNumIndices();
 	}
 	else
 	{
 		// it's important to set the vbo to 0, oterwise if there is garbage
 		// when deleting the vbo we could be deleting unwanted vbos
-		vboSet.indices = 0;
-		numElements = mesh.getNumVertices();
+		out.vboSet.indices = 0;
+		out.numElements = mesh.getNumVertices();
 	}
 }
 
-void MeshGpuGeneric::free()
-{
-	freeVao(vao);
-	freeVboSet(vboSet);
-}
-
-void UvPlaneMeshGpu::load()
+void MeshGpu::initScreenQuad(MeshGpu& out)
 {
 	const unsigned nv = 4;
 	const float uvCoords[2 * nv] =
@@ -104,22 +101,23 @@ void UvPlaneMeshGpu::load()
 	};
 	const unsigned loc = (unsigned)AttribLocation::TEX_COORD;
 
-	glGenVertexArrays(1, (GLuint*)&vao);
-	glBindVertexArray(vao);
+	out.attribBitMask = AttribBitMask::TEX_COORD;
+	out.geomType = GeomType::TRIANGLE_STRIP;
+	out.numElements = 4;
 
+	glGenVertexArrays(1, (GLuint*)&out.vao);
+	glBindVertexArray(out.vao);
+
+	for (int i = 0; i < (int)AttribLocation::NUM_ATTRIBS; i++) out.vboSet.attribs[i] = 0;
+	out.vboSet.indices = 0;
+	Vbo& vbo = out.vboSet.attribs[(int)AttribLocation::TEX_COORD];
 	glGenBuffers(1, (GLuint*)&vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(uvCoords), (void*)uvCoords, GL_STATIC_DRAW);
-	glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(loc, ATTRIB_NUM_COMPONENTS[loc], GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(loc);
-}
-
-void UvPlaneMeshGpu::free()
-{
-	freeVao(vao);
-	freeVbo(vbo);
-}
+} 
 
 void freeVao(Vao vao)
 {
@@ -141,7 +139,7 @@ void freeVbos(const Vbo* vbos, unsigned num)
 	glDeleteBuffers(num, (const GLuint*)vbos);
 }
 
-void freeVboSet(const VboSetFull& vboSet)
+void freeVboSet(const VboSet& vboSet)
 {
 	const unsigned na = (unsigned)AttribLocation::NUM_ATTRIBS;
 	// we don't need to check if the vbos are valid because 0s are ignored by OpenGL API

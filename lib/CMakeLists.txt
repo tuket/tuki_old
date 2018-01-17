@@ -26,6 +26,7 @@ set(SRC_RENDER_GL
 	"render_target.hpp" "render_target.cpp"
 	"util.hpp" "util.cpp"
 	"render.hpp" "render.cpp"
+	"blend.hpp" "blend.cpp"
 )
 
 set(SRC_RENDER_MATERIAL
@@ -36,6 +37,7 @@ set(SRC_RENDER_MATERIAL
 set(SRC_RENDER_MESH
 	"mesh.hpp" "mesh.cpp"
 	"simple_meshes.hpp" "simple_meshes.cpp"
+	"mesh_pool.hpp" "mesh_pool.cpp"
 )
 
 set(SRC_UTIL
@@ -57,7 +59,7 @@ set(SRC_ENGINE_SCENE_COMPONENT
 )
 
 set(SRC_ENGINE_GRAPHICS
-	"graphics_system.hpp"
+	"graphics_system.hpp" "graphics_system.cpp"
 	"renderer_3d.hpp"
 )
 

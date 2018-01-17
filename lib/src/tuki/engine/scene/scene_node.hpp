@@ -40,6 +40,7 @@ public:
 
 	void attachComponent(IComponent* component);
 	void attachChild(SceneNode* child);
+	void unattachChild(SceneNode* child);
 
 	std::string getName()const;
 	void setName(const std::string& newName);
@@ -56,6 +57,8 @@ public:
 	const glm::mat4& getGlobalTransformMatrix()const;
 	const glm::vec3 getGlobalPosition()const;
 	const glm::quat getGlobalRotation()const;
+
+	void destroy();
 
 private:
 
