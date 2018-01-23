@@ -2,6 +2,8 @@
 
 #include <glad/glad.h>
 
+using namespace glm;
+
 static const GLenum lookUpFactorGl[(unsigned)BlendFactor::COUNT] =
 {
 	GL_ZERO,
@@ -36,4 +38,18 @@ void setGraphicsApiBlendEquations(BlendEquationRGB rgb, BlendEquationAlpha alpha
 		lookUpFactorGl[(int)rgb.src], lookUpFactorGl[(int)rgb.dst],
 		lookUpFactorGl[(int)alpha.src], lookUpFactorGl[(int)alpha.dst]);
 	glBlendEquationSeparate(lookUpOperatorGl[(int)rgb.op], lookUpOperatorGl[(int)alpha.op]);
+}
+
+void setGraphicsApiBlendEquations(BlendEquationRGB rgb, BlendEquationAlpha alpha,
+	vec4 c)
+{
+	glBlendColor(c.r, c.g, c.b, c.a);
+	setGraphicsApiBlendEquations(rgb, alpha);
+}
+
+void setGraphicsApiBlendEquations(BlendEquationRGB rgb, BlendEquationAlpha alpha,
+	vec3 c, float a)
+{
+	glBlendColor(c.r, c.g, c.b, a);
+	setGraphicsApiBlendEquations(rgb, alpha);
 }

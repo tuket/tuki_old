@@ -2,12 +2,12 @@
 
 #include "component.hpp"
 
-class IMeshGpu;
+#include "../../../render/mesh/mesh_pool.hpp"
 
 class MeshComponent : public IComponent
 {
 	friend class GraphicsSystem;
-	IMeshGpu* meshGpu;
+	MeshGpuHandle meshGpu;
 public:
 	ComponentType getComponentType()const { return ComponentType::MeshComponent; }
 	static ComponentType getComponentTypeStatic() { return ComponentType::MeshComponent; }

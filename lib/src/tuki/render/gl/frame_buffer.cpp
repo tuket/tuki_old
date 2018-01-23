@@ -1,4 +1,4 @@
-#include "render_target.hpp"
+#include "frame_buffer.hpp"
 
 #include <glad/glad.h>
 #include <cassert>

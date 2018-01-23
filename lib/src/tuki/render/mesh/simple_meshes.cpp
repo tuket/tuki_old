@@ -77,13 +77,6 @@ Mesh createHorizontalPlane(float width, float depth,
     return mesh;
 }
 
-UvPlaneMeshGpu createScreenUvPlane(float width, float height)
-{
-	UvPlaneMeshGpu mesh;
-	mesh.load();
-	return mesh;
-}
-
 Mesh createBox(float width, float height, float depth)
 {
 	const unsigned numQuads = 6;

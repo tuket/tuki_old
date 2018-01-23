@@ -6,15 +6,17 @@ enum class ComponentType
 {
 	MeshComponent,
 	MaterialComponent,
-	PointLightComponent
+	PointLightComponent,
+
+	COUNT,
 };
 
 class IComponent
 {
 public:
 	SceneNode* getNode() { return node; }
-	virtual ComponentType getComponentType()const = 0;
+	ComponentType getComponentType()const { return ComponentType::COUNT; }
 
-private:
+protected:
 	SceneNode* node;
 };

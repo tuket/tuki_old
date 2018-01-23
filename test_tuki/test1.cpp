@@ -61,8 +61,8 @@ int main(int argc, char** argv)
 	}
 
 	Mesh mesh = Mesh::load("mesh/monkey.obj");
-	MeshGpuGeneric meshGpu;
-	meshGpu.load(mesh);
+	MeshGpu meshGpu;
+	MeshGpu::initFromMesh(meshGpu, mesh);
 
 	static float prevTime = (float)SDL_GetTicks();
 	static float curTime = (float)SDL_GetTicks();

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdexcept>
+#include <glm/vec4.hpp>
+#include <glm/vec3.hpp>
 
 enum class BlendOperator
 {
@@ -83,6 +85,8 @@ struct BlendEquationRGB
 	BlendFactor dst;
 	BlendOperator op;
 	BlendEquationRGB(BlendFactor src, BlendFactor dst, BlendOperator op) : src(src), dst(dst), op(op) {}
+	BlendEquationRGB(BlendSrcRGB blendSrc) : src(blendSrc.blendFactor), dst(BlendFactor::ZERO), op(BlendOperator::PLUS) {}
+	BlendEquationRGB(BlendDstRGB blendDst) : src(BlendFactor::ZERO), dst(blendDst.blendFactor), op(BlendOperator::PLUS) {}
 };
 
  BlendEquationRGB operator+(BlendSrcRGB src, BlendDstRGB dst)
@@ -140,7 +144,9 @@ struct BlendEquationAlpha
 	BlendFactor src;
 	BlendFactor dst;
 	BlendOperator op;
-	 BlendEquationAlpha(BlendFactor src, BlendFactor dst, BlendOperator op) : src(src), dst(dst), op(op) {}
+	BlendEquationAlpha(BlendFactor src, BlendFactor dst, BlendOperator op) : src(src), dst(dst), op(op) {}
+	BlendEquationAlpha(BlendSrcAlpha& srcAlpha) : src(srcAlpha.blendFactor), dst(BlendFactor::ZERO), op(BlendOperator::PLUS) {}
+	BlendEquationAlpha(BlendDstAlpha& dstAlpha) : src(BlendFactor::ZERO), dst(dstAlpha.blendFactor), op(BlendOperator::PLUS) {}
 };
 
 BlendEquationAlpha operator+(BlendSrcAlpha src, BlendDstAlpha dst)
@@ -180,3 +186,5 @@ BlendEquationAlpha MAX(BlendDstAlpha dst, BlendSrcAlpha src)
 }
 
 void setGraphicsApiBlendEquations(BlendEquationRGB rgb, BlendEquationAlpha alpha);
+void setGraphicsApiBlendEquations(BlendEquationRGB rgb, BlendEquationAlpha alpha, glm::vec4 constant);
+void setGraphicsApiBlendEquations(BlendEquationRGB rgb, BlendEquationAlpha alpha, glm::vec3 constantColor, float constantAlpha);
