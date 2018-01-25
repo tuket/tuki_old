@@ -62,6 +62,8 @@ public:
 	// use this material fro drawing, the material template program has to be bound
 	void useBatched();
 
+	void release();
+
 private:
 
 	// returns true if this is the only material instance sharing the same data
@@ -71,7 +73,7 @@ private:
 	void modifyNotification();
 
 	// DATA
-	std::uint32_t id;	// the fist 16 bits indicate the tamplate, the last 16 indicate the instance
+	std::uint32_t id;	// the fist 16 bits indicate the template, the last 16 indicate the instance
 
 };
 

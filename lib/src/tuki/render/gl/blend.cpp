@@ -32,6 +32,22 @@ static const GLenum lookUpOperatorGl[(unsigned)BlendOperator::COUNT] =
 	GL_MAX
 };
 
+BlendFactor operator-(BlendFactor one, BlendFactor sub) {
+	if (one != BlendFactor::ONE) throw std::logic_error("invalid one (ONE_MINUS)");
+	switch (sub)
+	{
+	case BlendFactor::ZERO: return BlendFactor::ONE;
+	case BlendFactor::ONE: return BlendFactor::ZERO;
+	case  BlendFactor::SRC_RGB: return BlendFactor::ONE_MINUS_SRC_RGB;
+	case  BlendFactor::DST_RGB: return BlendFactor::ONE_MINUS_DST_RGB;
+	case BlendFactor::SRC_ALPHA: return BlendFactor::ONE_MINUS_SRC_ALPHA;
+	case BlendFactor::DST_ALPHA: return BlendFactor::ONE_MINUS_DST_ALPHA;
+	case BlendFactor::CONSTANT_RGB: return BlendFactor::ONE_MINUS_CONSTANT_RGB;
+	case BlendFactor::CONSTANT_ALPHA: return BlendFactor::ONE_MINUS_CONSTANT_ALPHA;
+	default: throw std::logic_error("invalid sub (ONE_MINUS)");
+	}
+}
+
 void setGraphicsApiBlendEquations(BlendEquationRGB rgb, BlendEquationAlpha alpha)
 {
 	glBlendFuncSeparate(

@@ -1,29 +1,47 @@
 #include "mesh_pool.hpp"
 
+#include <exception>
+
+using namespace std;
+
 const unsigned INITIAL_MESH_VECTOR_SIZE = 128;
 
 MeshGpuHandle::MeshGpuHandle(const MeshGpuHandle& handle)
 {
 	id = handle.id;
-	getMeshPool().inc(handle.id);
+	MeshPool::getSingleton()->inc(handle.id);
+}
+
+MeshGpuHandle MeshGpuHandle::operator=(const MeshGpuHandle& handle)
+{
+	MeshId prevId = id;
+	id = handle.id;
+	MeshPool::getSingleton()->inc(handle.id);
+	if (prevId != -1) {
+		MeshPool::getSingleton()->dec(prevId);
+	}
+	return *this;
+}
+
+const MeshGpu* MeshGpuHandle::operator->()
+{
+	MeshPool* meshPool = MeshPool::getSingleton();
+	if (meshPool->refcount[id] >= 0) throw runtime_error("this mesh has been released");
+	return &meshPool->vmesh[id];
 }
 
 MeshGpuHandle::~MeshGpuHandle()
 {
-	getMeshPool().dec(id);
-}
-
-MeshPool& MeshGpuHandle::getMeshPool()const
-{
-	// TODO
+	MeshPool::getSingleton()->dec(id);
 }
 
 // MeshPool
 
 MeshPool::MeshPool()
 	: refcount(INITIAL_MESH_VECTOR_SIZE)
+	, vmesh(INITIAL_MESH_VECTOR_SIZE)
 {
-	nextFreeId = -1;	// -1 means index 0, -2 index 1, and so on
+	nextFreeId = 0;
 	for (int i = 0; i < INITIAL_MESH_VECTOR_SIZE; i++)
 	{
 		refcount[i] = i + 1;
@@ -52,7 +70,6 @@ MeshGpuHandle MeshPool::getMesh(const std::string& name)
 	{
 		// the mesh must be allocated
 		handle.id = load(name);
-		refcount[handle.id] = -1;
 	}
 	return handle;
 }
@@ -79,13 +96,13 @@ void MeshPool::release(MeshId id)
 MeshId MeshPool::load(const std::string& fileName)
 {
 	Mesh mesh;
-	mesh.load(fileName);
+	mesh.initFromFile(fileName);
 	expandIfNeeded();
 	MeshGpu::initFromMesh(vmesh[nextFreeId], mesh);
-	MeshGpuHandle handle;
-	handle.id = nextFreeId;
+	MeshId id = nextFreeId;
 	nextFreeId = refcount[nextFreeId];
-	refcount[handle.id] = -1;
+	refcount[id] = -1;
+	return id;
 }
 
 void MeshPool::expand()
@@ -95,7 +112,7 @@ void MeshPool::expand()
 	vmesh.resize(newSize);
 	refcount.resize(newSize);
 	idToName.resize(newSize);
-	for (int i = prevSize; i < newSize; i++)
+	for (unsigned i = prevSize; i < newSize; i++)
 	{
 		refcount[i] = i + 1;
 	}

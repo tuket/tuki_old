@@ -32,8 +32,6 @@ public:
 class Mesh : public IMesh
 {	
 public:
-	static Mesh load(const std::string& fileName);
-
 	Mesh()
 	{
 		numVertices = numTriangles = 0;
@@ -47,6 +45,8 @@ public:
 	unsigned getNumVertices()const { return numVertices; }
 	unsigned getNumIndices()const { return 3 * numTriangles; }
 	
+	void initFromFile(const std::string& fileName);
+
 	void initVertexData
 	(
 		unsigned numVertices,

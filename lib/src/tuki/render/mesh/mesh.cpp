@@ -72,7 +72,7 @@ void Mesh::free()
 	delete[] triangles;
 };
 
-Mesh Mesh::load(const string& fileName)
+void Mesh::initFromFile(const string& fileName)
 {
 	Assimp::Importer importer;
 	
@@ -99,79 +99,69 @@ Mesh Mesh::load(const string& fileName)
 		throw runtime_error("the mesh doesn't have any positions (" + fileName + ")");
 	}
 	
-	Mesh res;
-	res.numVertices = nv;
-	res.numTriangles = nt;
+	numVertices = nv;
+	numTriangles = nt;
 	
-	float* positions = new float[3 * nv];
-	for (int i = 0; i < nv; i++)
-	for (int j = 0; j < 3; j++)
+	positions = new float[3 * nv];
+	for (unsigned i = 0; i < nv; i++)
+	for (unsigned j = 0; j < 3; j++)
 	{
 		positions[3 * i + j] = mesh->mVertices[i][j];
 	}
 
-	float* normals = nullptr;
+	normals = nullptr;
 	if (mesh->HasNormals())
 	{
 		normals = new float[3 * nv];
-		for (int i = 0; i < nv; i++)
-		for (int j = 0; j < 3; j++)
+		for (unsigned i = 0; i < nv; i++)
+		for (unsigned j = 0; j < 3; j++)
 		{
 			normals[3 * i + j] = mesh->mNormals[i][j];
 		}
 	}
 
-	float* tangents = nullptr;
+	tangents = nullptr;
 	if (mesh->HasTangentsAndBitangents())
 	{
 		tangents = new float[3 * nv];
-		for (int i = 0; i < nv; i++)
-		for (int j = 0; j < 3; j++)
+		for (unsigned i = 0; i < nv; i++)
+		for (unsigned j = 0; j < 3; j++)
 		{
 			tangents[3 * i + j] = mesh->mTangents[i][j];
 		}
 	}
 
-	float* colors = nullptr;
+	colors = nullptr;
 	if (mesh->HasVertexColors(0))
 	{
 		colors = new float[3 * nv];
-		for (int i = 0; i < nv; i++)
-		for (int j = 0; j < 3; j++)
+		for (unsigned i = 0; i < nv; i++)
+		for (unsigned j = 0; j < 3; j++)
 		{
 			colors[3 * i + j] = mesh->mColors[0][i][j];
 		}
 	}
 
-	float* texCoords = nullptr;
+	texCoords = nullptr;
 	if (mesh->HasTextureCoords(0))
 	{
 		texCoords = new float[2 * nv];
-		for (int i = 0; i < nv; i++)
-		for (int j = 0; j < 2; j++)
+		for (unsigned i = 0; i < nv; i++)
+		for (unsigned j = 0; j < 2; j++)
 		{
 			texCoords[2 * i + j] = mesh->mTextureCoords[0][i][j];
 		}
 	}
 
-	unsigned* indices = nullptr;
+	triangles = nullptr;
 	if (!mesh->HasFaces())
 	{
 		throw runtime_error("mesh doesn't have faces(" + fileName + ")");
 	}
-	indices = new unsigned[3 * nt];
-	for (int i = 0; i < nt; i++)
-	for (int j = 0; j < 3; j++)
+	triangles = new unsigned[3 * nt];
+	for (unsigned i = 0; i < nt; i++)
+	for (unsigned j = 0; j < 3; j++)
 	{
-		indices[3 * i + j] = mesh->mFaces[i].mIndices[j];
+		triangles[3 * i + j] = mesh->mFaces[i].mIndices[j];
 	}
-
-	res.positions = positions;
-	res.normals = normals;
-	res.tangents = tangents;
-	res.colors = colors;
-	res.texCoords = texCoords;
-	res.triangles = indices;
-
-	return res;
 }

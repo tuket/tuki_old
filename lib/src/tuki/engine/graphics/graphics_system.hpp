@@ -42,10 +42,24 @@ private:
 private:
 	GraphicsSystem();
 
+	MeshComponent* accessMeshChunkSlot(int i, int j) { return &(*meshes[i])[j]; }
+	MaterialComponent* accessMaterialChunkSlot(int i, int j) { return &(*materials[i])[j]; }
+	PointLightComponent* accessPointLightChunkSlot(int i, int j) { return &(*pointLights[i])[j]; }
+
 	MeshComponent* createMeshComponent(const std::string& name);
 	MaterialComponent* createMaterialComponent(const std::string& name);
 	PointLightComponent* createPointLightComponent();
 
+	void releaseComponent(MeshComponent* c);
+	void releaseComponent(MaterialComponent* c);
+	void releaseComponent(PointLightComponent* c);
 
+	void initMeshChunk(unsigned i);
+	void initMaterialChunk(unsigned i);
+	void initPointLightChunk(unsigned i);
+
+	void addMeshChunk();
+	void addMaterialChunk();
+	void addPointLightChunk();
 	
 };

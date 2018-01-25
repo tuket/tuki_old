@@ -14,11 +14,9 @@ public:
 
 private:
 	SceneNode* root;
-	std::set<SceneNode*> dirtyNodes;	// nodes that have dirty flag set to true
+	std::set<const SceneNode*> dirtyNodes;	// nodes that have dirty flag set to true
 
 	void addDirty(const SceneNode* node);
 	void removeDirty(const SceneNode* node);
 
-private:
-	std::set<const SceneNode*> dirtyNodes;
 };

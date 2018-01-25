@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "../../util/singleton.hpp"
 
 typedef int MeshId;
 
@@ -15,15 +16,19 @@ class MeshGpuHandle
 public:
 	MeshGpuHandle() : id(-1) {}
 	MeshGpuHandle(const MeshGpuHandle& handle);
+	MeshGpuHandle operator=(const MeshGpuHandle& handle);
+
+	const MeshGpu* operator->();
 
 	~MeshGpuHandle();
 
-	MeshPool& getMeshPool()const;
+	static MeshGpuHandle NONE;
 };
 
-class MeshPool
+class MeshPool : public Singleton<MeshPool>
 {
-	friend class Engine;
+	friend class Singleton<MeshPool>;
+	friend class MeshGpuHandle;
 	MeshPool();
 public:
 	MeshGpuHandle getMesh(const std::string& name);

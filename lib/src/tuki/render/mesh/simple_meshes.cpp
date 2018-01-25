@@ -24,8 +24,8 @@ Mesh createHorizontalPlane(float width, float depth,
     // positions
     vector<vec3> positions;
     positions.reserve(nv);
-    for(int iz; iz < dd+1; iz++)
-    for(int ix; ix < wd+1; ix++)
+    for(unsigned iz=0; iz < dd+1; iz++)
+    for(unsigned ix=0; ix < wd+1; ix++)
     {
         float x = - (width / 2) + ((float)ix / wd) * width;
         float z = + (depth / 2) - ((float)iz / dd) * depth;
@@ -35,21 +35,21 @@ Mesh createHorizontalPlane(float width, float depth,
 
     // normals
     vector<vec3> normals(nv);
-    for(int i=0; i < nv; i++) normals[i] = vec3(0, 1, 0);
+    for(unsigned i=0; i < nv; i++) normals[i] = vec3(0, 1, 0);
 
     // tangents
     vector<vec3> tangents(nv);
-    for(int i=0; i < nv; i++) tangents[i] = vec3(1, 0, 0);
+    for(unsigned i=0; i < nv; i++) tangents[i] = vec3(1, 0, 0);
 
     // colors
     vector<vec3> colors(nv);
-    for(int i=0; i < nv; i++) colors[i] = vec3(0.8f, 0.8f, 0.8f);
+    for(unsigned i=0; i < nv; i++) colors[i] = vec3(0.8f, 0.8f, 0.8f);
 
     // texCoords
     vector<vec2> texCoords;
     texCoords.reserve(nv);
-    for(int iz; iz < dd+1; iz++)
-    for(int ix; ix < wd+1; ix++)
+    for(unsigned iz=0; iz < dd+1; iz++)
+    for(unsigned ix=0; ix < wd+1; ix++)
     {
         float u = (float)ix / wd;
         float v = (float)iz / dd;

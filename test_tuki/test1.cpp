@@ -5,6 +5,7 @@
 #include <tuki/render/gl/render.hpp>
 #include <tuki/render/material/material.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <tuki/render/mesh/mesh_pool.hpp>
 
 using namespace std;
 
@@ -50,19 +51,18 @@ int main(int argc, char** argv)
 	glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_CULL_FACE);
-	
+
 	MaterialManager* materialManager = MaterialManager::getSingleton();
 	Material material;
 	try {
 		material = materialManager->loadMaterial("materials/red_material.json");
 	}
-	catch (runtime_error e){
+	catch (runtime_error e) {
 		cout << e.what() << endl;
 	}
 
-	Mesh mesh = Mesh::load("mesh/monkey.obj");
-	MeshGpu meshGpu;
-	MeshGpu::initFromMesh(meshGpu, mesh);
+	MeshPool* meshPool = MeshPool::getSingleton();
+	MeshGpuHandle meshGpuHandle = meshPool->getMesh("mesh/monkey.obj");
 
 	static float prevTime = (float)SDL_GetTicks();
 	static float curTime = (float)SDL_GetTicks();
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 				run = false;
 			}
 		}
-		
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		ShaderProgram shaderProg = material.getShaderProg();
@@ -99,8 +99,8 @@ int main(int argc, char** argv)
 		shaderProg.uploadUniform("normalMat", normalMat);
 		shaderProg.uploadUniform("L", glm::vec3(0, 0, 1));
 		material.use();
-		meshGpu.bind();
-		glDrawElements(GL_TRIANGLES, meshGpu.getNumElements(), GL_UNSIGNED_INT, 0);
+		meshGpuHandle->bind();
+		glDrawElements(GL_TRIANGLES, meshGpuHandle->getNumElements(), GL_UNSIGNED_INT, 0);
 
 		SDL_GL_SwapWindow(window);
 

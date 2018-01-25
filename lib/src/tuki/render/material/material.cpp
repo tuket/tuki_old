@@ -67,6 +67,13 @@ void Material::useBatched()
 	man->useMaterialBatched(*this);
 }
 
+void Material::release()
+{
+	MaterialManager* man = MaterialManager::getSingleton();
+	man->releaseMaterial(*this);
+	id &= 0xFFFF0000;
+}
+
 bool Material::isUnique()const
 {
 	MaterialManager* man = MaterialManager::getSingleton();

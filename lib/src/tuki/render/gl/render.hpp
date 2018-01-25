@@ -16,7 +16,7 @@ enum class PolygonDrawMode
 
 struct SDL_Window;
 struct BlendEquationRGB;
-class BlendEquationAlpha;
+struct BlendEquationAlpha;
 
 namespace RenderApi
 {

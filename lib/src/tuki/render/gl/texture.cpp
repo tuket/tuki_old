@@ -117,11 +117,11 @@ void Image::flipY()
 	unsigned nc = getNumChannels();
 	unsigned char* d = (unsigned char*)data;
 
-	for (int y = 0; y < h2; y++)
-	for (int x = 0; x < w; x++)
-	for (int c = 0; c < nc; c++)
+	for (unsigned y = 0; y < h2; y++)
+	for (unsigned x = 0; x < w; x++)
+	for (unsigned c = 0; c < nc; c++)
 	{
-		int y2 = height - y - 1;
+		unsigned y2 = height - y - 1;
 		std::swap(
 			d[(y  * w + x) * nc + c],
 			d[(y2 * w + x) * nc + c]
