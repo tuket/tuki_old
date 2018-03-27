@@ -67,7 +67,7 @@ void MeshGpu::initFromMesh(MeshGpu& out, const IMesh& mesh)
 		}
 		else
 		{
-			// it's important to set the vbo to 0, oterwise if there is garbage
+			// it's important to set the vbo to 0, oterwise, if there is garbage,
 			// when deleting the vbo we could be deleting unwanted vbos
 			out.vboSet.attribs[i] = 0;
 		}
@@ -82,7 +82,7 @@ void MeshGpu::initFromMesh(MeshGpu& out, const IMesh& mesh)
 	}
 	else
 	{
-		// it's important to set the vbo to 0, oterwise if there is garbage
+		// it's important to set the vbo to 0, oterwise, if there is garbage,
 		// when deleting the vbo we could be deleting unwanted vbos
 		out.vboSet.indices = 0;
 		out.numElements = mesh.getNumVertices();

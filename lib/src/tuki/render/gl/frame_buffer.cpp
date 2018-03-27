@@ -46,20 +46,20 @@ FrameBuffer::FrameBuffer(
 FrameBuffer::FrameBuffer(
 	unsigned numTextures,
 	unsigned width, unsigned height,
-	const TexelFormat* texForms,	// array of texel formats for each texture
+	const TexelFormat* texFormats,	// array of texel formats for each texture
 	bool depthTex
 )
 {
 	if (
 		(numTextures == 0 && !depthTex) ||
 		width == 0 || height == 0 ||
-		texForms == nullptr
+		texFormats == nullptr
 	)return;
 
 	assert(numTextures <= MAX_NUM_TEXTURES);
 
 	texelFormats.resize(numTextures);
-	for (unsigned i = 0; i < numTextures; i++) texelFormats[i] = texForms[i];
+	for (unsigned i = 0; i < numTextures; i++) texelFormats[i] = texFormats[i];
 
 	textures.resize(numTextures);
 	for (unsigned i = 0; i < numTextures; i++)

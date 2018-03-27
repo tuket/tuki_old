@@ -61,6 +61,8 @@ set(SRC_ENGINE_SCENE_COMPONENT
 set(SRC_ENGINE_GRAPHICS
 	"graphics_system.hpp" "graphics_system.cpp"
 	"renderer_3d.hpp"
+	"default_renderer_3d.hpp" "default_renderer_3d.cpp"
+	"render_passes.hpp" "render_passes.cpp"
 )
 
 # ----------------------------------------------------
