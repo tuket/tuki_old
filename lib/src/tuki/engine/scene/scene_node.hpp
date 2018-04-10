@@ -24,21 +24,21 @@ public:
 	const std::vector<SceneNode*>& getChidren()const { return children; }
 	Scene* getScene()const { return scene; }
 
-	IComponent* getComponent(ComponentType type)const;
+	Component* getComponent(ComponentType type)const;
 	template <class T>
 	T* getComponent() const
 	{
 		return static_cast<T*>(getComponent(T::getComponentTypeStatic()));
 	}
 
-	std::vector<IComponent*> getComponents(ComponentType type) const;
+	std::vector<Component*> getComponents(ComponentType type) const;
 	template <class T>
 	std::vector<T*> getComponents() const
 	{
 		return static_cast<std::vector<T*>>(getComponent(T::getComponentTypeStatic()));
 	}
 
-	void attachComponent(IComponent* component);
+	void attachComponent(Component* component);
 	void attachChild(SceneNode* child);
 	void unattachChild(SceneNode* child);
 
@@ -73,7 +73,7 @@ private:
 	SceneNode* parent;
 	std::vector<SceneNode*> children;
 	std::map<std::string, SceneNode*> nameToChild;
-	std::vector<IComponent*> components;
+	std::vector<Component*> components;
 
 	// COMPONENTS
 	IMeshGpu* meshGpu;

@@ -17,7 +17,7 @@ FrameBuffer::FrameBuffer(
 {
 	if (
 		(numTextures == 0 && !depthTex) ||
-		width == 0 ||height == 0
+		width == 0 || height == 0
 	)return;
 
 	assert(numTextures <= MAX_NUM_TEXTURES);

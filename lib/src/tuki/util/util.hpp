@@ -3,6 +3,8 @@
 #include <string>
 #include <array>
 
+#include "handle.hpp"
+
 template<int start, int end>
 std::array<int, end - start> getNumberSequenceArray()
 {

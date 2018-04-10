@@ -5,9 +5,9 @@
 using namespace std;
 using namespace glm;
 
-IComponent* SceneNode::getComponent(ComponentType type)const
+Component* SceneNode::getComponent(ComponentType type)const
 {
-	for (IComponent* comp : components)
+	for (Component* comp : components)
 	{
 		if (comp->getComponentType() == type)
 			return comp;
@@ -15,23 +15,23 @@ IComponent* SceneNode::getComponent(ComponentType type)const
 	return nullptr;
 }
 
-vector<IComponent*> SceneNode::getComponents(ComponentType type) const
+vector<Component*> SceneNode::getComponents(ComponentType type) const
 {
-	vector<IComponent*> res;
+	vector<Component*> res;
 	int n = 0;
-	for (IComponent* comp : components)
+	for (Component* comp : components)
 	{
 		if (comp->getComponentType() == type) n++;
 	}
 	res.reserve(n);
-	for (IComponent* comp : components)
+	for (Component* comp : components)
 	{
 		if (comp->getComponentType() == type) res.push_back(comp);
 	}
 	return res;
 }
 
-void SceneNode::attachComponent(IComponent* component)
+void SceneNode::attachComponent(Component* component)
 {
 	components.push_back(component);
 }
