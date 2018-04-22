@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Component* ComponentFactory::create(ComponentType type) {
+unique_ptr<Component> ComponentFactory::create(ComponentType type) {
 	if (type >= builders.size())
 		throw invalid_argument("type >= builders.size()");
 	ComponentBuilder* builder = builders[type];
@@ -13,12 +13,12 @@ Component* ComponentFactory::create(ComponentType type) {
 	return builder->create();
 }
 
-Component* ComponentFactory::create(const char* typeName) {
+unique_ptr<Component> ComponentFactory::create(const char* typeName) {
 	ComponentType type = idMap.id(typeName);
 	return create(type);
 }
 
-Component* ComponentFactory::create(ComponentData* data)
+unique_ptr<Component> ComponentFactory::create(ComponentData* data)
 {
 	ComponentType type = data->getComponentType();
 	if (builders.size() >= type || builders[type] == nullptr)

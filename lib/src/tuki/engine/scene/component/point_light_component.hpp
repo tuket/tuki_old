@@ -8,6 +8,6 @@ class PointLightComponent : public Component
 	friend class GraphicsSystem;
 public:
 	glm::vec3 intensity;
-	ComponentType getComponentType()const { return ComponentType::PointLight; }
-	static ComponentType getComponentTypeStatic() { return ComponentType::PointLight; }
+	ComponentType getComponentType()const { return ComponentTypes::PointLight; }
+	static ComponentType getComponentTypeStatic() { return ComponentTypes::PointLight; }
 };

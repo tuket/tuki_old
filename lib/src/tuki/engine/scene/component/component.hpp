@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tuki/util/id_map.hpp>
+#include <memory>
 
 class SceneNode;
 typedef int ComponentType;
@@ -34,8 +35,8 @@ struct ComponentData
 
 struct ComponentBuilder
 {
-	virtual Component* create() = 0;
-	virtual Component* create(ComponentData* data) = 0;
+	virtual std::unique_ptr<Component> create() = 0;
+	virtual std::unique_ptr<Component> create(ComponentData* data) = 0;
 	virtual ComponentType getComponentType()const = 0;
 };
 
@@ -52,9 +53,26 @@ public:
 		idMap.add(name);
 	}
 
-	Component* create(ComponentType type);
-	Component* create(const char* type);
-	Component* create(ComponentData* data);
+	std::unique_ptr<Component> create(ComponentType type);
+	std::unique_ptr<Component> create(const char* type);
+	std::unique_ptr<Component> create(ComponentData* data);
 
 	void addBuilder(ComponentBuilder* builder);
+};
+
+struct CompareComponentsByType {
+	bool operator()(const Component* a, const Component* b) {
+		return a->getComponentType() < b->getComponentType();
+	}
+};
+
+// This Component is used to perform searches by type
+class DummyComponent : public Component
+{
+	ComponentType type;
+public:
+	DummyComponent(ComponentType type) : type(type) {}
+	SceneNode * getNode() { return nullptr; }
+	virtual ComponentType getComponentType()const { return type; }
+	virtual const char* getComponentTypeName()const { return "DummyComponent"; }
 };

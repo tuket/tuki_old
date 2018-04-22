@@ -3,6 +3,7 @@
 #include "component.hpp"
 
 #include "../../../render/mesh/mesh_pool.hpp"
+#include "tuki/util/mallocr/mallocr_chunk.hpp"
 
 class MeshComponent : public Component
 {
@@ -27,8 +28,11 @@ private:
 class MeshComponentBuilder : public ComponentBuilder
 {
 public:
-	Component* create()override;
-	Component* create(ComponentData* data)override { create((MeshComponentData*)data); }
-	Component* create(MeshComponentData* data);
+	handle<Component> create()override;
+	handle<Component> create(ComponentData* data)override { create((MeshComponentData*)data); }
+	handle<Component> create(MeshComponentData* data);
+	void destroy(handle<Component> component)override;
 	ComponentType getComponentType()const override{ return ComponentTypes::Mesh; }
+private:
+	Mallocr_Chunk<MeshComponent> mallocr;
 };

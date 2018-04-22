@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include "component/component.hpp"
 
 class IMeshGpu;
@@ -21,7 +22,7 @@ class SceneNode
 public:
 
 	SceneNode* getParent()const { return parent; }
-	const std::vector<SceneNode*>& getChidren()const { return children; }
+	const std::unordered_map<std::string, SceneNode*>& getChidren()const { return nameToChild; }
 	Scene* getScene()const { return scene; }
 
 	Component* getComponent(ComponentType type)const;
@@ -62,7 +63,7 @@ public:
 
 private:
 
-	SceneNode() : parent(nullptr), id(-1), scene(nullptr) { components.reserve(4); }
+	SceneNode() : parent(nullptr), id(-1), scene(nullptr) { }
 	int id;
 	std::string name;
 	Transform trans;
@@ -71,12 +72,8 @@ private:
 	mutable bool dirtyFlag;		// if true, 
 	Scene* scene;
 	SceneNode* parent;
-	std::vector<SceneNode*> children;
-	std::map<std::string, SceneNode*> nameToChild;
-	std::vector<Component*> components;
-
-	// COMPONENTS
-	IMeshGpu* meshGpu;
+	std::unordered_map<std::string, SceneNode*> nameToChild;
+	std::multiset<Component*, CompareComponentsByType> components;
 
 	// set the dirty flag to true, which means that the transform matrix must be recomputed recursivelly
 	void setDirty();

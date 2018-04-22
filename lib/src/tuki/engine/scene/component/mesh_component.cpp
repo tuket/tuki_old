@@ -1,11 +1,16 @@
 #include "mesh_component.hpp"
 
-Component* MeshComponentBuilder::create()
+handle<Component> MeshComponentBuilder::create()
+{
+	return mallocr.create();
+}
+
+handle<Component> MeshComponentBuilder::create(MeshComponentData* data)
 {
 
 }
 
-Component* MeshComponentBuilder::create(MeshComponentData* data)
+void MeshComponentBuilder::destroy(handle<Component> component)
 {
 
 }

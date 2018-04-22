@@ -7,10 +7,10 @@ using namespace glm;
 
 Component* SceneNode::getComponent(ComponentType type)const
 {
-	for (Component* comp : components)
-	{
-		if (comp->getComponentType() == type)
-			return comp;
+	DummyComponent dummy(type);
+	auto it = components.find(&dummy);
+	if (it != components.end()) {
+		return *it;
 	}
 	return nullptr;
 }
@@ -19,13 +19,12 @@ vector<Component*> SceneNode::getComponents(ComponentType type) const
 {
 	vector<Component*> res;
 	int n = 0;
-	for (Component* comp : components)
+	DummyComponent dummy(type);
+	auto er = components.equal_range(&dummy);
+	res.reserve(std::distance(er.first, er.second));
+	for (auto it = er.first; it != er.second; ++it)
 	{
-		if (comp->getComponentType() == type) n++;
-	}
-	res.reserve(n);
-	for (Component* comp : components)
-	{
+		Component* comp = *it;
 		if (comp->getComponentType() == type) res.push_back(comp);
 	}
 	return res;
@@ -33,7 +32,7 @@ vector<Component*> SceneNode::getComponents(ComponentType type) const
 
 void SceneNode::attachComponent(Component* component)
 {
-	components.push_back(component);
+	components.insert(component);
 }
 
 void SceneNode::attachChild(SceneNode* child)
@@ -41,18 +40,17 @@ void SceneNode::attachChild(SceneNode* child)
 	if (nameToChild.find(child->name) != nameToChild.end())
 		throw runtime_error("can't attach child: there is a child with that name already");
 
-	children.push_back(child);
 	child->parent = this;
 	nameToChild[child->name] = child;
 }
 
 void SceneNode::unattachChild(SceneNode* child)
 {
-	for (auto it = children.begin(); it != children.end(); ++it)
+	for (auto it = nameToChild.begin(); it != nameToChild.end(); ++it)
 	{
-		if (*it == child)
+		if (it->second == child)
 		{
-			children.erase(it);
+			nameToChild.erase(it);
 			child->parent = nullptr;
 			return;
 		}
@@ -83,7 +81,7 @@ const mat4& SceneNode::getTransformMatrix()const
 	{
 		recomputeTransMat();
 		scene->removeDirty(this);
-		for (SceneNode* node : children) scene->addDirty(node);
+		for (auto p : nameToChild) scene->addDirty(p.second);
 	}
 	return transMat;
 }
@@ -109,10 +107,10 @@ void SceneNode::destroy()
 {
 	if (parent)
 	{
-		auto it = parent->children.begin();
-		while (it != parent->children.end()) ++it;
-		assert(it == parent->children.end() && "parent doesn't have this child");
-		parent->children.erase(it);
+		auto it = parent->nameToChild.begin();
+		while (it != parent->nameToChild.end() && it->second != this) ++it;
+		assert(it == parent->nameToChild.end() && "parent doesn't have this child");
+		parent->nameToChild.erase(it);
 	}
 	delete this;
 }

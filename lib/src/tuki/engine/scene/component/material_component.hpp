@@ -8,6 +8,6 @@ class MaterialComponent : public Component
 	friend class GraphicsSystem;
 public:
 	Material material;
-	ComponentType getComponentType()const { return ComponentType::Material; }
-	static ComponentType getComponentTypeStatic() { return ComponentType::Material; }
+	ComponentType getComponentType()const { return ComponentTypes::Material; }
+	static ComponentType getComponentTypeStatic() { return ComponentTypes::Material; }
 };

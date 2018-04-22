@@ -444,7 +444,7 @@ MaterialManager::MaterialTemplateEntryHeader* MaterialManager::allocateMaterialT
 	if (remainingSpaceInChunk < requiredSpace)
 	{
 		allocateNewMaterialTemplateChunk();
-		nextMaterialTemplateOffset = (materialTemplateDataChunks.size() - 1) * chunkSize;
+		nextMaterialTemplateOffset = ((unsigned)materialTemplateDataChunks.size() - 1) * chunkSize;
 	}
 
 	materialTemplateOffsets.push_back(nextMaterialTemplateOffset);
@@ -629,7 +629,7 @@ void parseJsonArrayAndSet(
 			}
 			else if (it->IsInt())
 			{
-				x[count] = it->GetInt();
+				x[count] = (float)it->GetInt();
 			}
 			else{
 				stringstream ss;
