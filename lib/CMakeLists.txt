@@ -44,12 +44,15 @@ set(SRC_UTIL
 	"util.hpp" "util.cpp"
 	"singleton.hpp"
 	"multi_sort.hpp"
-	"handle.hpp"
 	"id_map.hpp" "id_map.cpp"
 )
 
 set(SRC_UTIL_MALLOCR
 	"mallocr_chunk.hpp"
+)
+
+set(SRC_ENGINE
+	"engine.hpp" "engine.cpp"
 )
 
 set(SRC_ENGINE_SCENE
@@ -80,6 +83,7 @@ PREPEND(SRC_RENDER_MATERIAL "src/tuki/render/material" ${SRC_RENDER_MATERIAL})
 PREPEND(SRC_RENDER_MESH "src/tuki/render/mesh" ${SRC_RENDER_MESH})
 PREPEND(SRC_UTIL "src/tuki/util" ${SRC_UTIL})
 PREPEND(SRC_UTIL_MALLOCR "src/tuki/util/mallocr" ${SRC_UTIL_MALLOCR})
+PREPEND(SRC_ENGINE "src/tuki/engine" ${SRC_ENGINE})
 PREPEND(SRC_ENGINE_SCENE "src/tuki/engine/scene" ${SRC_ENGINE_SCENE})
 PREPEND(SRC_ENGINE_SCENE_COMPONENT "src/tuki/engine/scene/component" ${SRC_ENGINE_SCENE_COMPONENT})
 PREPEND(SRC_ENGINE_GRAPHICS "src/tuki/engine/graphics" ${SRC_ENGINE_GRAPHICS})
@@ -90,6 +94,7 @@ add_library(${PROJ_NAME}
 	${SRC_RENDER_MESH}
 	${SRC_UTIL}
 	${SRC_UTIL_MALLOCR}
+	${SRC_ENGINE}
 	${SRC_ENGINE_SCENE}
 	${SRC_ENGINE_SCENE_COMPONENT}
 	${SRC_ENGINE_GRAPHICS}
@@ -127,6 +132,7 @@ source_group("render\\material" FILES ${SRC_RENDER_MATERIAL})
 source_group("render\\mesh" FILES ${SRC_RENDER_MESH})
 source_group("util" FILES ${SRC_UTIL})
 source_group("util\\mallocr" FILES ${SRC_UTIL_MALLOCR})
+source_group("engine" FILES ${SRC_ENGINE})
 source_group("engine\\scene" FILES ${SRC_ENGINE_SCENE})
 source_group("engine\\scene\\component" FILES ${SRC_ENGINE_SCENE_COMPONENT})
 source_group("engine\\graphics" FILES ${SRC_ENGINE_GRAPHICS})

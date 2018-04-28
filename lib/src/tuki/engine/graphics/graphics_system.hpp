@@ -10,7 +10,6 @@ class Renderer3D;
 class GraphicsSystem
 {
 	friend class Engine;
-	friend class SceneNode;
 	
 public:
 	
