@@ -2,7 +2,7 @@
 
 /*
 	This is a simple generic allocator
-	Allocates memory in chunks for fixed size object
+	Allocates memory in chunks for fixed size objects
 	reducing memory fragmentation
 	and potentially increasing chache locality
  */
@@ -132,7 +132,7 @@ destroy(size_t index)
 	freeSlots.insert(index);
 }
 
-template <typename T, unsigned CHUNK_SIZE>
+template <typename T, size_t CHUNK_SIZE>
 void Mallocr_Chunk<T, CHUNK_SIZE>::allocateChunk()
 {
 	assert(freeSlots.empty());

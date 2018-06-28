@@ -1,24 +1,30 @@
 #pragma once
 
 #include <vector>
+#include "tuki/util/id_map.hpp"
 
 class EngineSystem;
 class ComponentFactory;
+typedef SystemId;
 
 class Engine
 {
-	std::vector<EngineSystem*> systems;
-	ComponentFactory* componentFactory;
+	static IdMap idMap;
+	static std::vector<EngineSystem*> systems;
+	static ComponentFactory* componentFactory;
+	static bool initCalled;
 public:
-	void addSystem(EngineSystem* system);
-	void init();
-	ComponentFactory* getComponentFactory();
+	static SystemId addSystem(EngineSystem* system);
+	static EngineSystem* getSystem(SystemId id);
+	static SystemId getSystemId(const std::string& name);
+	static void init();
+	static ComponentFactory* getComponentFactory();
 };
 
 class EngineSystem
 {
 public:
-	void onAdded(Engine* engine);
-	void onInit();
-	void onUpdate(float dt);
+	virtual std::string getName()const = 0;
+	virtual void onInit() {}
+	virtual void onUpdate(float dt) = 0;
 };

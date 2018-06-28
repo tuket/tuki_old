@@ -11,7 +11,7 @@ class IdMap
 public:
 	IdMap() {}
 	IdMap(const std::vector<std::string>& names);
-	void add(const std::string& name);
+	int add(const std::string& name);	// returns the id of the added name
 	int id(const std::string& name)const;
 	const std::string& name(int id)const;
 };

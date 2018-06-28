@@ -5,9 +5,10 @@ using namespace std;
 IdMap::IdMap(const vector<string>& names)
 	:names(names)
 {}
-void IdMap::add(const std::string& name) {
+int IdMap::add(const std::string& name) {
 	ids[name] = names.size();
 	names.push_back(name);
+	return names.size() - 1;
 }
 int IdMap::id(const std::string& name)const {
 	unordered_map<string, int>::const_iterator it =

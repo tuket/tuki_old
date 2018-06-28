@@ -1,23 +1,30 @@
 #pragma once
 
 #include <tuki/engine/scene/component/component.hpp>
+#include "../engine.hpp"
 #include <vector>
 #include <array>
 #include <string>
 
 class Renderer3D;
 
-class GraphicsSystem
+class GraphicsSystem : public EngineSystem
 {
-	friend class Engine;
-	
 public:
-	
-	
-private:
-	Renderer3D* renderer3d;
+	std::string getName()const override { return "GraphicsSystem"; }
+	void onInit()override;
+	void onUpdate(float dt)override;
 
-private:
-	GraphicsSystem();
+	unsigned getWindowWidth()const { return w; }
+	unsigned getWindowHeight()const { return h; }
+	void setWindowDimensions(unsigned w, unsigned h);
+	bool isFullScreen()const { return fullScreen; }
+	void setFullScreen(bool yes = true);
+	void setWindowPosition(int x, int y);
 	
+private:
+	unsigned x, y;
+	unsigned w, h;
+	bool fullScreen;
+	Renderer3D* renderer3d;
 };
